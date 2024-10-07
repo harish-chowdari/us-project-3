@@ -1,17 +1,21 @@
 import React, { useState } from "react";
-import axios from "../../axios";
+import axiosInstance from "../../axios";
+import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Styles from "./AddListings.module.css";
 
 const AddListing = () => {
+
+  const [suggestions, setSuggestions] = useState([]);
+
   const [formData, setFormData] = useState({
     community: "",
     location: "",
     roomsCount: "",
     houseArea: "",
     houseWidth: "",
-    BathRoomCount: "",
+    bathroomCount: "",
     lookingForCount: "",
     description: "",
   });
@@ -23,7 +27,7 @@ const AddListing = () => {
     description,
     houseArea,
     houseWidth,
-    BathRoomCount,
+    bathroomCount,
     lookingForCount,
   } = formData;
 
@@ -46,27 +50,66 @@ const AddListing = () => {
         !description ||
         !houseArea ||
         !houseWidth ||
-        !BathRoomCount ||
+        !bathroomCount ||
         !lookingForCount
       ) {
         toast.dismiss();
         toast.error("Please fill all the fields");
         return;
       }
-
-      const response = await axios.post("/add-listing", formData);
+      
+      const response = await axiosInstance.post("/add-listing", formData);
       toast.dismiss();
 
-      if(response.data.Added) {
-
-      toast.success("Listing added successfully!");
+      if (response.data.Added) {
+        toast.success("Listing added successfully!");
       }
-      
     } catch (error) {
       console.error("There was an error adding the listing!", error);
       toast.error("Error adding the listing. Try again.");
     }
   };
+
+  const locationChange = async (e) => {
+    const { value } = e.target;
+
+    setFormData({
+      ...formData,
+      location: value,
+    });
+
+    if (value) {
+      const results = await autoCompletePlaces(value);
+
+      console.log(results.predictions)
+
+      
+
+      const descriptions = results.predictions.map(result => result.description);
+        console.log(descriptions); 
+    
+      
+      setSuggestions(results.description);
+    }
+  };
+
+  async function autoCompletePlaces(input) {
+    try {
+      const response = await axios.get(
+        `https://api.olamaps.io/places/v1/autocomplete?input=${input}&api_key=keJsi8v9wvcTK6yiSujDT6bPZ3mzzYPYKDPKcGhx`,
+        {
+          headers: {
+            "X-Request-Id": Math.random().toString(36).slice(2),
+            "X-Correlation-Id": Math.random().toString(36).slice(2),
+          },
+        }
+      );
+      return response.data; 
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  }
 
   return (
     <div className={Styles.container}>
@@ -88,10 +131,12 @@ const AddListing = () => {
             type="text"
             name="location"
             value={location}
-            onChange={handleInputChange}
+            onChange={locationChange}
             className={Styles.input}
           />
         </div>
+
+        {}
         <div className={Styles.formGroup}>
           <label className={Styles.label}>Rooms Count:</label>
           <input
@@ -100,6 +145,7 @@ const AddListing = () => {
             value={roomsCount}
             onChange={handleInputChange}
             className={Styles.input}
+            min="1"
           />
         </div>
 
@@ -126,13 +172,14 @@ const AddListing = () => {
         </div>
 
         <div className={Styles.formGroup}>
-          <label className={Styles.label}>Bath Room Count:</label>
+          <label className={Styles.label}>Bathroom Count:</label>
           <input
             type="number"
-            name="BathRoomCount"
-            value={BathRoomCount}
+            name="bathroomCount"
+            value={bathroomCount}
             onChange={handleInputChange}
             className={Styles.input}
+            min="1"
           />
         </div>
 
@@ -144,8 +191,8 @@ const AddListing = () => {
             value={lookingForCount}
             onChange={handleInputChange}
             className={Styles.input}
+            min="1"
           />
-
         </div>
 
         <div className={Styles.formGroup}>
