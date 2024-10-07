@@ -6,14 +6,16 @@ async function SigUp(req, res) {
 
     const isUserExist = await Schema.findOne({ email: email });
 
-    if (isUserExist) { 
+    if (isUserExist) {
       return res.status(200).json({ AlreadyExist: "Account already exists" });
     }
 
     if (!name || !email || !password) {
-      return res.status(200).json({ EnterAllDetails: "Please fill all the fields" });
+      return res
+        .status(200)
+        .json({ EnterAllDetails: "Please fill all the fields" });
     }
- 
+
     const data = new Schema({
       name,
       email,
@@ -34,7 +36,9 @@ async function Login(req, res) {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(200).json({ EnterAllDetails: "Please fill all the fields" });
+      return res
+        .status(200)
+        .json({ EnterAllDetails: "Please fill all the fields" });
     }
 
     const isUserExist = await Schema.findOne({ email: email });
@@ -47,12 +51,33 @@ async function Login(req, res) {
     }
 
     return res.json(isUserExist);
-  } catch (error) { 
+  } catch (error) {
     console.log(error);
   }
-}  
+}
+
+async function getUserName(req, res) {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res
+        .status(200)
+        .json({ EnterAllDetails: "Please fill all the fields" });
+    }
+
+    const isUserExist = await Schema.findOne({ _id: userId });
+    if (!isUserExist) {
+      return res.status(200).json({ NotExist: "User does not exist" });
+    }
+    return res.json({ userName: isUserExist.name });
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 module.exports = {
   SigUp,
-  Login
+  Login,
+  getUserName,
 };

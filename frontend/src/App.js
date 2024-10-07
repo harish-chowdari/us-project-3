@@ -7,11 +7,13 @@ import Home from "./Components/Home/Home";
 import ViewListings from "./Pages/ViewListings/ViewListings";
 import Layout from "./Layout/Layout";
 import AddListing from "./Pages/AddListings/AddListings";
+import Navbar from "./Components/Navbar/Navbar";
 
 const App = () => {
   return (
     <div>
       <BrowserRouter>
+      <Navbar />
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
