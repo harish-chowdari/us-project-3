@@ -1,9 +1,9 @@
 .navbar{
-    margin-left: 260px;
+    margin-left: 0px;
     display: flex;
     align-items: center;
     height: 60px;
-    width: calc(100vw - 260px);
+    width: 100%;
     background-color: #f5f6fa;
     box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
     position: fixed;

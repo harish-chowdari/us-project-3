@@ -4,39 +4,37 @@ async function addListing(req, res) {
   const {
     community,
     location,
+    placeId,
+    placeDescription,
+    lat,
+    long,
     roomsCount,
     houseArea,
     houseWidth,
-    BathRoomCount,
+    bathRoomCount,
     lookingForCount,
     description,
   } = req.body;
 
   try {
-    if (
-      !community ||
-      !location ||
-      !roomsCount ||
-      !houseArea ||
-      !houseWidth ||
-      !BathRoomCount ||
-      !lookingForCount ||
-      !description
-    ) {
-      return res
-        .status(200)
-        .json({ EnterAllDetails: "Please fill all the fields" });
-    }
+   
+
+    const loc = {
+      placeId,
+      placeDescription,
+      lat,
+      long,
+    };
 
     const data = new Listings({
       community,
-      location,
+      location:loc,
       roomsCount,
       description,
       houseArea,
       houseWidth,
-      BathRoomCount,
-      lookingForCount,
+      bathRoomCount, 
+      lookingForCount, 
     });
     const d = await data.save();
     if(d) {

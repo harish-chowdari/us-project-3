@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+
+
 const ListingSchema = new mongoose.Schema(
   {
     community: {
@@ -7,7 +9,26 @@ const ListingSchema = new mongoose.Schema(
       required: true,
     },
     location: {
-      type: String,
+      type: [
+        {
+          placeId: {
+            type: String,
+            required: true,
+          },
+          placeDescription: {
+            type: String,
+            required: true,
+          },
+          lat: {
+            type: String,
+            required: true,
+          },
+          long: {
+            type: String,
+            required: true,
+          },
+        },
+      ],
       required: true,
     },
     roomsCount: {
@@ -22,7 +43,7 @@ const ListingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    BathRoomCount: {
+    bathRoomCount: {  
       type: Number,
       required: true,
     },
