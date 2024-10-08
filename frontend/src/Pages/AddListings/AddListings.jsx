@@ -83,16 +83,37 @@ const AddListing = () => {
   };
 
   const locationChange = (e) => {
+
+    const {value} = e.target
+
     setFormData({
       ...formData,
       location: e.target.value,
     });
+
+    if (value) {
+      autoCompletePlaces(lat, long, value)
+        .then((data) => {
+          setSuggestions(
+            data.predictions.map((place) => ({
+              description: place.description,
+              placeId: place.place_id,
+              lat: lat, 
+              long: long
+            }))
+          );
+        })
+        .catch((error) => {
+          console.error("Error fetching place data:", error);
+        });
+    }
+
+
   };
 
   const handleSuggestionClick = async (suggestion) => {
     const selectedPlace = suggestions.find(s => s.description === suggestion);
 
-    // Assuming `selectedPlace` has placeId and location (lat, long)
     if (selectedPlace) {
       setFormData({
         ...formData,
@@ -116,22 +137,16 @@ const AddListing = () => {
           const locationString = `Lat: ${latitude}, Lon: ${longitude}`;
           setFormData({
             ...formData,
-            location: locationString,
             lat: latitude,
             long: longitude,
           });
 
           autoCompletePlaces(latitude, longitude, "landmark")
             .then((data) => {
-              // Mapping returned suggestions to include necessary info
-              setSuggestions(
-                data.predictions.map((place) => ({
-                  description: place.description,
-                  placeId: place.place_id,
-                  lat: latitude, // if lat/long are constant for suggestions
-                  long: longitude  // if lat/long are constant for suggestions
-                }))
-              );
+
+              if(!data.predictions.length) {
+                setSuggestions([])  
+              }          
             })
             .catch((error) => {
               console.error("Error fetching place data:", error);
@@ -146,7 +161,8 @@ const AddListing = () => {
     }
   };
 
-  console.log(formData);
+
+  console.log(formData)
 
   async function autoCompletePlaces(lat, lon, query) {
     try {

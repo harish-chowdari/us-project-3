@@ -11,7 +11,7 @@ async function addListing(req, res) {
     roomsCount,
     houseArea,
     houseWidth,
-    bathRoomCount,
+    bathroomCount,
     lookingForCount,
     description,
   } = req.body;
@@ -33,7 +33,7 @@ async function addListing(req, res) {
       description,
       houseArea,
       houseWidth,
-      bathRoomCount, 
+      bathroomCount, 
       lookingForCount, 
     });
     const d = await data.save();

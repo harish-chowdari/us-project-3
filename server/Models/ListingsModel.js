@@ -43,7 +43,7 @@ const ListingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    bathRoomCount: {  
+    bathroomCount: {  
       type: Number,
       required: true,
     },
