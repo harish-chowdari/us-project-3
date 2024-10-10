@@ -7,12 +7,15 @@ import Styles from "./AddListings.module.css";
 
 const AddListing = () => {
   const [suggestions, setSuggestions] = useState([]);
-  const [currentLocation, setCurrentLocation] = useState({ lat: null, lon: null });
+  const [currentLocation, setCurrentLocation] = useState({
+    lat: null,
+    lon: null,
+  });
   const [selectedPrediction, setSelectedPrediction] = useState(null);
   const [distanceFromUNT, setDistanceFromUNT] = useState(null); // State for the distance
 
   const untUniversitycords = {
-    lat: 33.210880 ,
+    lat: 33.21088,
     lon: -97.147827,
   };
 
@@ -28,10 +31,24 @@ const AddListing = () => {
     houseWidth: "",
     bathroomCount: "",
     lookingForCount: "",
-    description: distanceFromUNT
+    description: distanceFromUNT,
   });
 
-  const { community, location, placeId, placeDescription, lat, long, bathroomCount, houseArea, houseWidth, lookingForCount, roomsCount, description, distance } = formData;
+  const {
+    community,
+    location,
+    placeId,
+    placeDescription,
+    lat,
+    long,
+    bathroomCount,
+    houseArea,
+    houseWidth,
+    lookingForCount,
+    roomsCount,
+    description,
+    distance,
+  } = formData;
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -78,7 +95,7 @@ const AddListing = () => {
           headers: {
             "X-Request-Id": Math.random().toString(36).slice(2),
             "X-Correlation-Id": Math.random().toString(36).slice(2),
-          }
+          },
         }
       );
       return response.data;
@@ -105,7 +122,12 @@ const AddListing = () => {
     });
 
     // Calculate distance from UNT
-    const distance = calculateDistance(untUniversitycords.lat, untUniversitycords.lon, lat, lng);
+    const distance = calculateDistance(
+      untUniversitycords.lat,
+      untUniversitycords.lon,
+      lat,
+      lng
+    );
     setDistanceFromUNT(distance);
 
     console.log(suggestion);
@@ -117,8 +139,7 @@ const AddListing = () => {
     const toRadians = (value) => (value * Math.PI) / 180;
 
     const earthRadius = 6371; // Radius of the Earth in kilometers
-   
-    
+
     const lat1Rad = toRadians(lat1);
     const lon1Rad = toRadians(lon1);
     const lat2Rad = toRadians(lat2);
@@ -129,21 +150,18 @@ const AddListing = () => {
 
     const a =
       Math.sin(latDiff / 2) * Math.sin(latDiff / 2) +
-      Math.cos(lat1Rad) * Math.cos(lat2Rad) * 
-      Math.sin(lonDiff / 2) * Math.sin(lonDiff / 2);
+      Math.cos(lat1Rad) *
+        Math.cos(lat2Rad) *
+        Math.sin(lonDiff / 2) *
+        Math.sin(lonDiff / 2);
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distanceKm = earthRadius * c; 
-    const distanceMeters = distanceKm * 1000; 
+    const distanceKm = earthRadius * c;
+    const distanceMeters = distanceKm * 1000;
 
     return distanceKm.toFixed(2);
-  
   };
 
-
-
-
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -160,23 +178,22 @@ const AddListing = () => {
       bathroomCount,
       lookingForCount,
       description,
-      distance: distanceFromUNT
+      distance: distanceFromUNT,
     };
 
-    
-
     try {
-      
+      const response = await axiosInstance.post("/add-listing", dataToSend);
+      if (response.data.error) {
+        toast.error(response.data.error);
+        return;
+      }
 
-      const response = await axiosInstance.post('/add-listing', dataToSend);
-        if(response.data.error){
-          toast.error(response.data.error);
-          return;
-        }
-      
       toast.success("Listing added successfully!");
     } catch (error) {
-      toast.error("Error adding listing: " + error.response?.data?.message || error.message);
+      toast.error(
+        "Error adding listing: " + error.response?.data?.message ||
+          error.message
+      );
     }
   };
 
@@ -219,7 +236,6 @@ const AddListing = () => {
             </ul>
           )}
         </div>
-
 
         {/* Display the calculated distance */}
         {distanceFromUNT && (
@@ -277,16 +293,6 @@ const AddListing = () => {
         </div>
 
         <div className={Styles.formGroup}>
-          <label className={Styles.label}>Description:</label>
-          <textarea
-            name="description"
-            value={description}
-            onChange={handleInputChange}
-            className={Styles.input}
-          />
-        </div>
-
-        <div className={Styles.formGroup}>
           <label className={Styles.label}>Rooms Count:</label>
           <input
             type="number"
@@ -298,6 +304,17 @@ const AddListing = () => {
           />
         </div>
 
+        <div className={Styles.formGroup}>
+          <label className={Styles.label}>Description:</label>
+          <textarea
+            rows="4"
+            type="text"
+            name="description"
+            value={description}
+            onChange={handleInputChange}
+            className={Styles.input}
+          />
+        </div>
 
         <button type="submit" className={Styles.submitButton}>
           Add Listing

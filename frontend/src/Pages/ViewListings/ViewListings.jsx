@@ -35,8 +35,8 @@ const ViewListings = () => {
 
   return (
     <div className={Styles.container}>
-      <div>
-        <h2>All Listings</h2>
+      <div className={Styles.header}>
+        <h2 className={Styles.title}>All Listings</h2>
         <input type="text" placeholder="Search..." className={Styles.search} />
       </div>
       {listings.length === 0 ? (
@@ -45,31 +45,44 @@ const ViewListings = () => {
         <ul className={Styles.list}>
           {listings.map((listing) => (
             <li key={listing._id} className={Styles.listItem}>
-              <h3>{listing.community}</h3>
-              <p>
+              <h3 className={Styles.listItemTitle}>
+                {listing.community} (community)
+              </h3>
+              <p className={Styles.listItemDetails}>
                 <strong>Address:</strong> {listing.location[0].placeDescription}
               </p>
-              <p>
-                <strong>Location:</strong> {listing.location[0].lat},
-                {listing.location[0].long}
-              </p>
-              <p>
+
+              {/* 
+              {
+                listing.location.map((location, index) => (
+                  <p key={index} className={Styles.listItemDetails}>
+                    <strong>Latitude:</strong> {location.latitude}
+                    <strong>Longitude:</strong> {location.longitude}
+                  </p>
+                ))
+              } 
+              */}
+
+              <p className={Styles.listItemDetails}>
                 <strong>Rooms Count:</strong> {listing.roomsCount}
               </p>
-              <p>
+              <p className={Styles.listItemDetails}>
                 <strong>Description:</strong> {listing.description}
               </p>
-              <p>
+              <p className={Styles.listItemDetails}>
                 <strong>House Area:</strong> {listing.houseArea}
               </p>
-              <p>
+              <p className={Styles.listItemDetails}>
                 <strong>House Width:</strong> {listing.houseWidth}
               </p>
-              <p>
+              <p className={Styles.listItemDetails}>
                 <strong>Bathroom Count:</strong> {listing.bathroomCount}
               </p>
-              <p>
+              <p className={Styles.listItemDetails}>
                 <strong>Looking For Count:</strong> {listing.lookingForCount}
+              </p>
+              <p className={Styles.listItemDetails}>
+                <strong>Distance from UNT:</strong> {listing.distance} Km
               </p>
             </li>
           ))}
