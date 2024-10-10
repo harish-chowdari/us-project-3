@@ -1,19 +1,14 @@
 import React, { useState } from "react";
-import axiosInstance from "../../axios";
 import axios from "axios";
+import axiosInstance from "../../axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Styles from "./AddListings.module.css";
 
 const AddListing = () => {
   const [suggestions, setSuggestions] = useState([]);
-  const [distance, setDistance] = useState(null); 
-  const [shouldShowDistance, setShouldShowDistance] = useState(false);
-
-  const untUniversityCords = {
-    lat: 33.210880,
-    long: -97.147827,
-  };
+  const [currentLocation, setCurrentLocation] = useState({ lat: null, lon: null });
+  const [selectedPrediction, setSelectedPrediction] = useState(null);
 
   const [formData, setFormData] = useState({
     community: "",
@@ -28,175 +23,17 @@ const AddListing = () => {
     bathroomCount: "",
     lookingForCount: "",
     description: "",
-    distance: "",
   });
 
-  const {
-    community,
-    location,
-    placeId,
-    placeDescription,
-    lat,
-    long,
-    roomsCount,
-    description,
-    houseArea,
-    houseWidth,
-    bathroomCount,
-    lookingForCount,
-    distance: calculatedDistance,
-  } = formData;
+  const { community, location, placeId, placeDescription, lat, long, bathroomCount, houseArea, houseWidth, lookingForCount, roomsCount, description } = formData;
 
-  const haversineDistance = (coords1, coords2) => {
-    const toRad = (value) => (value * Math.PI) / 180; // Convert degrees to radians
-    const R = 6371; // Earth radius in km
-
-    const latDistance = toRad(coords2.lat - coords1.lat);
-    const longDistance = toRad(coords2.long - coords1.long);
-
-    const a =
-      Math.sin(latDistance / 2) * Math.sin(latDistance / 2) +
-      Math.cos(toRad(coords1.lat)) * Math.cos(toRad(coords2.lat)) *
-      Math.sin(longDistance / 2) * Math.sin(longDistance / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return R * c; // Distance in kilometers
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    const updatedFormData = {
-      ...formData,
-      [name]: value,
-    };
-
-    setFormData(updatedFormData);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    calculateDistance();
-  
-    // Include distance in form data if it's calculated
-    const updatedFormData = {
-      ...formData,
-      distance: distance ? distance.toFixed(2) : "", // Add distance to formData
-    };
-  
-    try {
-      if (
-        !community ||
-        !roomsCount ||
-        !placeId ||
-        !placeDescription ||
-        !lat ||
-        !long ||
-        !description ||
-        !houseArea ||
-        !houseWidth ||
-        !bathroomCount ||
-        !lookingForCount
-      ) {
-        toast.dismiss();
-        toast.error("Please fill all the fields");
-        return;
-      }
-  
-      console.log(updatedFormData);
-      const response = await axiosInstance.post("/add-listing", updatedFormData);
-      toast.dismiss();
-  
-      if (response.data.Added) {
-        toast.success("Listing added successfully!");
-        setShouldShowDistance(true); 
-      }
-    } catch (error) {
-      console.error("There was an error adding the listing!", error);
-      toast.error("Error adding the listing. Try again.");
-    }
-  };
-  
-
-  const calculateDistance = () => {
-    if (!lat || !long) {
-      toast.error("Please enter latitude and longitude to calculate distance");
-      return;
-    }
-
-    const calculatedDistance = haversineDistance(
-      untUniversityCords,
-      { lat: parseFloat(lat), long: parseFloat(long) }
-    );
-
-    setDistance(calculatedDistance); 
-    setShouldShowDistance(true); 
-  };
-
-  const locationChange = (e) => {
-    const { value } = e.target;
-
-    setFormData({
-      ...formData,
-      location: value,
-    });
-
-    if (value) {
-      autoCompletePlaces(lat, long, value)
-        .then((data) => {
-          setSuggestions(
-            data.predictions.map((place) => ({
-              description: place.description,
-              placeId: place.place_id,
-              lat: lat,
-              long: long,
-            }))
-          );
-        })
-        .catch((error) => {
-          console.error("Error fetching place data:", error);
-        });
-    }
-  };
-
-  const handleSuggestionClick = async (suggestion) => {
-    const selectedPlace = suggestions.find(s => s.description === suggestion);
-
-    if (selectedPlace) {
-      setFormData({
-        ...formData,
-        location: selectedPlace.description,
-        placeId: selectedPlace.placeId,
-        placeDescription: selectedPlace.description,
-        lat: selectedPlace.lat,
-        long: selectedPlace.long,
-      });
-      setSuggestions([]);
-    }
-  };
-
+  // Function to fetch current location
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const { coords } = position;
-          const { latitude, longitude } = coords;
-
-          setFormData({
-            ...formData,
-            lat: latitude,
-            long: longitude,
-          });
-
-          autoCompletePlaces(latitude, longitude, "landmark")
-            .then((data) => {
-              if (!data.predictions.length) {
-                setSuggestions([]);
-              }
-            })
-            .catch((error) => {
-              console.error("Error fetching place data:", error);
-            });
+          const { latitude, longitude } = position.coords;
+          setCurrentLocation({ lat: latitude, lon: longitude });
         },
         (error) => {
           toast.error("Could not retrieve location: " + error.message);
@@ -207,6 +44,29 @@ const AddListing = () => {
     }
   };
 
+  // Function to handle location input changes and trigger autocomplete API
+  const locationChange = (e) => {
+    const value = e.target.value;
+    setFormData({ ...formData, location: value });
+
+    if (currentLocation.lat && currentLocation.lon && value.trim() !== "") {
+      autoCompletePlaces(currentLocation.lat, currentLocation.lon, value)
+        .then((data) => {
+          if (data.predictions.length) {
+            setSuggestions(data.predictions);
+          } else {
+            setSuggestions([]);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching place data:", error);
+        });
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  // Autocomplete places API call
   async function autoCompletePlaces(lat, lon, query) {
     try {
       const response = await axios.get(
@@ -215,10 +75,9 @@ const AddListing = () => {
           headers: {
             "X-Request-Id": Math.random().toString(36).slice(2),
             "X-Correlation-Id": Math.random().toString(36).slice(2),
-          },
+          }
         }
       );
-
       return response.data;
     } catch (error) {
       console.error(`Error in ola reverse geocoding with data ${query}`, error);
@@ -226,12 +85,65 @@ const AddListing = () => {
     }
   }
 
+  // Function to handle input change
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Function to handle suggestion click and extract latitude and longitude
+  const handleSuggestionClick = (suggestion) => {
+    const { lat, lng } = suggestion.geometry.location;
+
+    setFormData({
+      ...formData,
+      location: suggestion.description,
+      lat: lat,
+      long: lng,
+      placeId: suggestion.place_id,
+      placeDescription: suggestion.description,
+    });
+
+    console.log(suggestion);
+
+    setSelectedPrediction(suggestion);
+    setSuggestions([]);
+  };
+
+  // Function to handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Data to send to the backend
+    const dataToSend = {
+      community,
+      location,
+      placeId,
+      placeDescription,
+      lat,
+      long,
+      roomsCount,
+      houseArea,
+      houseWidth,
+      bathroomCount,
+      lookingForCount,
+      description,
+    };
+
+    try {
+      const response = await axiosInstance.post('/add-listing', dataToSend);
+      toast.success("Listing added successfully!");
+      // Optionally reset the form or perform other actions after success
+      
+    } catch (error) {
+      toast.error("Error adding listing: " + error.response?.data?.message || error.message);
+    }
+  };
+
   return (
     <div className={Styles.container}>
       <h2 className={Styles.heading}>Add Listing</h2>
-      <form onSubmit={handleSubmit} className={Styles.form}>
-        
-      <div className={Styles.formGroup}>
+      <form className={Styles.form} onSubmit={handleSubmit}>
+        <div className={Styles.formGroup}>
           <label className={Styles.label}>Community:</label>
           <input
             type="text"
@@ -241,6 +153,7 @@ const AddListing = () => {
             className={Styles.input}
           />
         </div>
+
         <div className={Styles.formGroup}>
           <label className={Styles.label}>Location:</label>
           <input
@@ -257,7 +170,7 @@ const AddListing = () => {
                 <li
                   key={index}
                   className={Styles.suggestionItem}
-                  onClick={() => handleSuggestionClick(suggestion.description)}
+                  onClick={() => handleSuggestionClick(suggestion)}
                 >
                   {suggestion.description}
                 </li>
@@ -265,6 +178,7 @@ const AddListing = () => {
             </ul>
           )}
         </div>
+
         <div className={Styles.formGroup}>
           <label className={Styles.label}>Rooms Count:</label>
           <input
@@ -276,26 +190,7 @@ const AddListing = () => {
             min="1"
           />
         </div>
-        <div className={Styles.formGroup}>
-          <label className={Styles.label}>House Area:</label>
-          <input
-            type="text"
-            name="houseArea"
-            value={houseArea}
-            onChange={handleInputChange}
-            className={Styles.input}
-          />
-        </div>
-        <div className={Styles.formGroup}>
-          <label className={Styles.label}>House Width:</label>
-          <input
-            type="text"
-            name="houseWidth"
-            value={houseWidth}
-            onChange={handleInputChange}
-            className={Styles.input}
-          />
-        </div>
+
         <div className={Styles.formGroup}>
           <label className={Styles.label}>Bathroom Count:</label>
           <input
@@ -307,6 +202,29 @@ const AddListing = () => {
             min="1"
           />
         </div>
+
+        <div className={Styles.formGroup}>
+          <label className={Styles.label}>House Area:</label>
+          <input
+            type="text"
+            name="houseArea"
+            value={houseArea}
+            onChange={handleInputChange}
+            className={Styles.input}
+          />
+        </div>
+
+        <div className={Styles.formGroup}>
+          <label className={Styles.label}>House Width:</label>
+          <input
+            type="text"
+            name="houseWidth"
+            value={houseWidth}
+            onChange={handleInputChange}
+            className={Styles.input}
+          />
+        </div>
+
         <div className={Styles.formGroup}>
           <label className={Styles.label}>Looking For Count:</label>
           <input
@@ -318,6 +236,7 @@ const AddListing = () => {
             min="1"
           />
         </div>
+
         <div className={Styles.formGroup}>
           <label className={Styles.label}>Description:</label>
           <textarea
@@ -328,17 +247,10 @@ const AddListing = () => {
           />
         </div>
 
-        <button onClick={calculateDistance} type="submit" className={Styles.submitButton}>
+        <button type="submit" className={Styles.submitButton}>
           Add Listing
         </button>
       </form>
-
-
-      {shouldShowDistance && distance !== null && (
-        <div className={Styles.distanceInfo}>
-          Distance from Unt University: {distance.toFixed(2)} km
-        </div>
-      )}
 
       <ToastContainer />
     </div>
