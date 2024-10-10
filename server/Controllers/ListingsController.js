@@ -27,6 +27,10 @@ async function addListing(req, res) {
       long,
     };
 
+    if(!community || !location || !placeId || !placeDescription || !lat || !long || !roomsCount || !houseArea || !houseWidth || !bathroomCount || !lookingForCount || !description || !distance) {
+      return res.json({ error: "Please fill all the fields" });
+    }
+
     const data = new Listings({
       community,
       location:loc,

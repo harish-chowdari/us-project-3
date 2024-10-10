@@ -9,6 +9,12 @@ const AddListing = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [currentLocation, setCurrentLocation] = useState({ lat: null, lon: null });
   const [selectedPrediction, setSelectedPrediction] = useState(null);
+  const [distanceFromUNT, setDistanceFromUNT] = useState(null); // State for the distance
+
+  const untUniversitycords = {
+    lat: 33.210880 ,
+    lon: -97.147827,
+  };
 
   const [formData, setFormData] = useState({
     community: "",
@@ -22,12 +28,11 @@ const AddListing = () => {
     houseWidth: "",
     bathroomCount: "",
     lookingForCount: "",
-    description: "",
+    description: distanceFromUNT
   });
 
-  const { community, location, placeId, placeDescription, lat, long, bathroomCount, houseArea, houseWidth, lookingForCount, roomsCount, description } = formData;
+  const { community, location, placeId, placeDescription, lat, long, bathroomCount, houseArea, houseWidth, lookingForCount, roomsCount, description, distance } = formData;
 
-  // Function to fetch current location
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -44,7 +49,6 @@ const AddListing = () => {
     }
   };
 
-  // Function to handle location input changes and trigger autocomplete API
   const locationChange = (e) => {
     const value = e.target.value;
     setFormData({ ...formData, location: value });
@@ -66,7 +70,6 @@ const AddListing = () => {
     }
   };
 
-  // Autocomplete places API call
   async function autoCompletePlaces(lat, lon, query) {
     try {
       const response = await axios.get(
@@ -85,12 +88,10 @@ const AddListing = () => {
     }
   }
 
-  // Function to handle input change
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Function to handle suggestion click and extract latitude and longitude
   const handleSuggestionClick = (suggestion) => {
     const { lat, lng } = suggestion.geometry.location;
 
@@ -103,17 +104,49 @@ const AddListing = () => {
       placeDescription: suggestion.description,
     });
 
-    console.log(suggestion);
+    // Calculate distance from UNT
+    const distance = calculateDistance(untUniversitycords.lat, untUniversitycords.lon, lat, lng);
+    setDistanceFromUNT(distance);
 
+    console.log(suggestion);
     setSelectedPrediction(suggestion);
     setSuggestions([]);
   };
 
-  // Function to handle form submission
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const toRadians = (value) => (value * Math.PI) / 180;
+
+    const earthRadius = 6371; // Radius of the Earth in kilometers
+   
+    
+    const lat1Rad = toRadians(lat1);
+    const lon1Rad = toRadians(lon1);
+    const lat2Rad = toRadians(lat2);
+    const lon2Rad = toRadians(lon2);
+
+    const latDiff = lat2Rad - lat1Rad;
+    const lonDiff = lon2Rad - lon1Rad;
+
+    const a =
+      Math.sin(latDiff / 2) * Math.sin(latDiff / 2) +
+      Math.cos(lat1Rad) * Math.cos(lat2Rad) * 
+      Math.sin(lonDiff / 2) * Math.sin(lonDiff / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distanceKm = earthRadius * c; 
+    const distanceMeters = distanceKm * 1000; 
+
+    return distanceKm.toFixed(2);
+  
+  };
+
+
+
+
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Data to send to the backend
     const dataToSend = {
       community,
       location,
@@ -127,13 +160,21 @@ const AddListing = () => {
       bathroomCount,
       lookingForCount,
       description,
+      distance: distanceFromUNT
     };
 
+    
+
     try {
-      const response = await axiosInstance.post('/add-listing', dataToSend);
-      toast.success("Listing added successfully!");
-      // Optionally reset the form or perform other actions after success
       
+
+      const response = await axiosInstance.post('/add-listing', dataToSend);
+        if(response.data.error){
+          toast.error(response.data.error);
+          return;
+        }
+      
+      toast.success("Listing added successfully!");
     } catch (error) {
       toast.error("Error adding listing: " + error.response?.data?.message || error.message);
     }
@@ -179,6 +220,72 @@ const AddListing = () => {
           )}
         </div>
 
+
+        {/* Display the calculated distance */}
+        {distanceFromUNT && (
+          <div className={Styles.distanceInfo}>
+            Distance from UNT: {distanceFromUNT} km
+          </div>
+        )}
+
+        <div className={Styles.formGroup}>
+          <label className={Styles.label}>House Area:</label>
+          <input
+            type="number"
+            name="houseArea"
+            value={houseArea}
+            onChange={handleInputChange}
+            className={Styles.input}
+            min="0"
+          />
+        </div>
+
+        <div className={Styles.formGroup}>
+          <label className={Styles.label}>House Width:</label>
+          <input
+            type="number"
+            name="houseWidth"
+            value={houseWidth}
+            onChange={handleInputChange}
+            className={Styles.input}
+            min="0"
+          />
+        </div>
+
+        <div className={Styles.formGroup}>
+          <label className={Styles.label}>Bathroom Count:</label>
+          <input
+            type="number"
+            name="bathroomCount"
+            value={bathroomCount}
+            onChange={handleInputChange}
+            className={Styles.input}
+            min="0"
+          />
+        </div>
+
+        <div className={Styles.formGroup}>
+          <label className={Styles.label}>Looking For Count:</label>
+          <input
+            type="number"
+            name="lookingForCount"
+            value={lookingForCount}
+            onChange={handleInputChange}
+            className={Styles.input}
+            min="0"
+          />
+        </div>
+
+        <div className={Styles.formGroup}>
+          <label className={Styles.label}>Description:</label>
+          <textarea
+            name="description"
+            value={description}
+            onChange={handleInputChange}
+            className={Styles.input}
+          />
+        </div>
+
         <div className={Styles.formGroup}>
           <label className={Styles.label}>Rooms Count:</label>
           <input
@@ -191,61 +298,6 @@ const AddListing = () => {
           />
         </div>
 
-        <div className={Styles.formGroup}>
-          <label className={Styles.label}>Bathroom Count:</label>
-          <input
-            type="number"
-            name="bathroomCount"
-            value={bathroomCount}
-            onChange={handleInputChange}
-            className={Styles.input}
-            min="1"
-          />
-        </div>
-
-        <div className={Styles.formGroup}>
-          <label className={Styles.label}>House Area:</label>
-          <input
-            type="text"
-            name="houseArea"
-            value={houseArea}
-            onChange={handleInputChange}
-            className={Styles.input}
-          />
-        </div>
-
-        <div className={Styles.formGroup}>
-          <label className={Styles.label}>House Width:</label>
-          <input
-            type="text"
-            name="houseWidth"
-            value={houseWidth}
-            onChange={handleInputChange}
-            className={Styles.input}
-          />
-        </div>
-
-        <div className={Styles.formGroup}>
-          <label className={Styles.label}>Looking For Count:</label>
-          <input
-            type="number"
-            name="lookingForCount"
-            value={lookingForCount}
-            onChange={handleInputChange}
-            className={Styles.input}
-            min="1"
-          />
-        </div>
-
-        <div className={Styles.formGroup}>
-          <label className={Styles.label}>Description:</label>
-          <textarea
-            name="description"
-            value={description}
-            onChange={handleInputChange}
-            className={Styles.textarea}
-          />
-        </div>
 
         <button type="submit" className={Styles.submitButton}>
           Add Listing
