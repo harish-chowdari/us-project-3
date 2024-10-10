@@ -6,14 +6,14 @@ const ViewListings = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchDistance, setSearchDistance] = useState(""); 
 
+  
   useEffect(() => {
     const fetchListings = async () => {
       try {
         const response = await axios.get("/all-listings");
-        // Assuming the response has a structure that contains listings directly
         setListings(response.data);
-        console.log(response.data);
       } catch (err) {
         console.error("Error fetching listings", err);
         setError("Failed to fetch listings");
@@ -33,17 +33,28 @@ const ViewListings = () => {
     return <div>{error}</div>;
   }
 
+  const filteredListings = listings.filter((listing) => {
+    const enteredDistance = parseFloat(searchDistance);
+    return isNaN(enteredDistance) || listing.distance <= enteredDistance;
+  });
+
   return (
     <div className={Styles.container}>
       <div className={Styles.header}>
         <h2 className={Styles.title}>All Listings</h2>
-        <input type="text" placeholder="Search..." className={Styles.search} />
+        <input
+          type="number"
+          placeholder="Search by distance (km)"
+          value={searchDistance}
+          onChange={(e) => setSearchDistance(e.target.value)} e
+          className={Styles.search}
+        />
       </div>
-      {listings.length === 0 ? (
+      {filteredListings.length === 0 ? (
         <p>No listings found</p>
       ) : (
         <ul className={Styles.list}>
-          {listings.map((listing) => (
+          {filteredListings.map((listing) => (
             <li key={listing._id} className={Styles.listItem}>
               <h3 className={Styles.listItemTitle}>
                 {listing.community} (community)
@@ -51,18 +62,6 @@ const ViewListings = () => {
               <p className={Styles.listItemDetails}>
                 <strong>Address:</strong> {listing.location[0].placeDescription}
               </p>
-
-              {/* 
-              {
-                listing.location.map((location, index) => (
-                  <p key={index} className={Styles.listItemDetails}>
-                    <strong>Latitude:</strong> {location.latitude}
-                    <strong>Longitude:</strong> {location.longitude}
-                  </p>
-                ))
-              } 
-              */}
-
               <p className={Styles.listItemDetails}>
                 <strong>Rooms Count:</strong> {listing.roomsCount}
               </p>
