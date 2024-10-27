@@ -9,24 +9,21 @@
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.title {
-  font-size: 28px;
+  margin: 10px auto;
+  font-size: 20px;
   font-weight: bold;
   color: #333;
+  text-align: center;
 }
+
+
 
 .search {
   padding: 10px 15px;
   font-size: 16px;
   border: 2px solid #ddd;
   border-radius: 8px;
-  width: 250px;
+  width: 220px;
   transition: border-color 0.3s ease;
 }
 
@@ -74,6 +71,36 @@
 
 .listItemDetails:not(:last-child) {
   margin-bottom: 8px;
+}
+
+.selectContainer{
+  width: 50%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+
+}
+
+.selectContainer label{
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+
+.select{
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  width: 250px;
+  transition: border-color 0.3s ease;
+}
+
+.select:focus {
+  border-color: #3498db;
+  outline: none;
 }
 
 @media (max-width: 768px) {
