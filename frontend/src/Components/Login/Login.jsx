@@ -40,7 +40,7 @@ const Login = () => {
         localStorage.setItem("userId", userId);
         toast.success("Login successful!"); // Show success toast with a specific icon
         setTimeout(() => {
-          navigate(`/home/${userId}/add-listings`);
+          navigate(`/home`);
         }, 1000);
       }
     } catch (error) {

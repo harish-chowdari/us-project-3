@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 
-
-
 const ListingSchema = new mongoose.Schema(
   {
     community: {
@@ -32,6 +30,10 @@ const ListingSchema = new mongoose.Schema(
       
     },
     roomsCount: {
+      type: Number,
+      
+    },
+    price: {
       type: Number,
       
     },

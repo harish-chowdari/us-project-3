@@ -9,6 +9,7 @@ async function addListing(req, res) {
     lat,
     long,
     roomsCount,
+    price,
     houseArea,
     houseWidth,
     bathroomCount,
@@ -27,7 +28,7 @@ async function addListing(req, res) {
       long,
     };
 
-    if(!community || !location || !placeId || !placeDescription || !lat || !long || !roomsCount || !houseArea || !houseWidth || !bathroomCount || !lookingForCount || !description || !distance) {
+    if(!community || !location || !placeId || !placeDescription || !lat || !long || !roomsCount || !price || !houseArea || !houseWidth || !bathroomCount || !lookingForCount || !description || !distance) {
       return res.json({ error: "Please fill all the fields" });
     }
 
@@ -35,6 +36,7 @@ async function addListing(req, res) {
       community,
       location:loc,
       roomsCount,
+      price,
       description,
       houseArea,
       houseWidth,

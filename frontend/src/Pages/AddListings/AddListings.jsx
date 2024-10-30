@@ -27,6 +27,7 @@ const AddListing = () => {
     lat: "",
     long: "",
     roomsCount: "",
+    price: "",
     houseArea: "",
     houseWidth: "",
     bathroomCount: "",
@@ -46,6 +47,7 @@ const AddListing = () => {
     houseWidth,
     lookingForCount,
     roomsCount,
+    price,
     description,
     distance,
   } = formData;
@@ -173,6 +175,7 @@ const AddListing = () => {
       lat,
       long,
       roomsCount,
+      price,
       houseArea,
       houseWidth,
       bathroomCount,
@@ -298,6 +301,18 @@ const AddListing = () => {
             type="number"
             name="roomsCount"
             value={roomsCount}
+            onChange={handleInputChange}
+            className={Styles.input}
+            min="1"
+          />
+        </div>
+
+        <div className={Styles.formGroup}>
+          <label className={Styles.label}>Price in $:</label>
+          <input
+            type="number"
+            name="price"
+            value={price}
             onChange={handleInputChange}
             className={Styles.input}
             min="1"

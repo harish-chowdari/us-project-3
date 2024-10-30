@@ -35,7 +35,7 @@ const Signup = () => {
 
         localStorage.setItem("userId", userId);
         setTimeout(() => {
-          navigate(`/home/${userId}/add-listings`);
+          navigate(`/home`);
         }, 1000);
       }
     } catch (error) {
