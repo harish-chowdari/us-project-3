@@ -2,12 +2,14 @@ const express = require("express");
 const router = express.Router();
 
 
-const { addListing, getAllListings } = require("../Controllers/ListingsController");
+const { addListing, getAllListings, getPlaceDetails } = require("../Controllers/ListingsController");
 
 
 
 router.get("/all-listings", getAllListings);
 router.post("/add-listing", addListing);
+
+router.post("/autocomplete", getPlaceDetails);
 
 
 
