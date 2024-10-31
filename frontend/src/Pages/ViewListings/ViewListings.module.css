@@ -97,6 +97,13 @@
   margin-top: 20px;
 }
 
+.listItemImage{
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  margin-bottom: 0px;
+}
+
 .selectContainer label{
   font-size: 18px;
   font-weight: bold;

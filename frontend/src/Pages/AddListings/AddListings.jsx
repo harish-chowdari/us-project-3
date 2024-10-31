@@ -179,8 +179,8 @@ const AddListing = () => {
                         onChange={handleImageChange}
                     />
                     {imagePreviewUrl && (
-                        <div className="image-preview">
-                            <img src={imagePreviewUrl} alt="House Preview" />
+                        <div >
+                            <img className={Styles.imagePreview} src={imagePreviewUrl} alt="House Preview" />
                         </div>
                     )}
                 </div>
@@ -301,7 +301,7 @@ const AddListing = () => {
                     />
                 </div>
 
-                <button type="submit" className={Styles.submitButton}>
+                <button onClick={handleSubmit} className={Styles.submitButton}>
                     Add Listing
                 </button>
             </form>

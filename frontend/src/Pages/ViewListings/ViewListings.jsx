@@ -167,6 +167,11 @@ const ViewListings = () => {
                             <h3 className={Styles.listItemTitle}>
                                 {listing?.community} (community)
                             </h3>
+                            <img 
+                                className={Styles.listItemImage}
+                                src={listing?.houseImage}
+                                alt={listing?.community}
+                            />
                             <p className={Styles.listItemDetails}>
                                 <strong>Address:</strong>{" "}
                                 {listing?.location[0]?.placeDescription}
@@ -200,8 +205,8 @@ const ViewListings = () => {
                             </p>
                             <p className={Styles.listItemDetails}>
                                 <strong>Distance from UNT:</strong>{" "}
-                                {listing?.distance} miles
-                            </p>
+                                {(listing?.distance * 0.621371).toFixed(2)} miles
+                                </p>
                         </li>
                     ))}
                 </ul>
