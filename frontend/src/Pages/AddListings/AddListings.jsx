@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 import axiosInstance from "../../axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -11,8 +10,8 @@ const AddListing = () => {
         lat: null,
         lon: null,
     });
-    const [selectedPrediction, setSelectedPrediction] = useState(null);
     const [distanceFromUNT, setDistanceFromUNT] = useState(null);
+    const [imagePreviewUrl, setImagePreviewUrl] = useState("");
 
     const untUniversitycords = {
         lat: 33.207488,
@@ -21,6 +20,7 @@ const AddListing = () => {
 
     const [formData, setFormData] = useState({
         community: "",
+        houseImage: null,
         location: "",
         placeId: "",
         placeDescription: "",
@@ -33,23 +33,8 @@ const AddListing = () => {
         bathroomCount: "",
         lookingForCount: "",
         description: "",
+        distance: "",
     });
-
-    const {
-        community,
-        location,
-        placeId,
-        placeDescription,
-        lat,
-        long,
-        bathroomCount,
-        houseArea,
-        houseWidth,
-        lookingForCount,
-        roomsCount,
-        price,
-        description,
-    } = formData;
 
     const getCurrentLocation = () => {
         if (navigator.geolocation) {
@@ -69,6 +54,16 @@ const AddListing = () => {
         }
     };
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setFormData({ ...formData, houseImage: file });
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreviewUrl(reader.result);
+            reader.readAsDataURL(file);
+        }
+    };
+
     const locationChange = async (e) => {
         const value = e.target.value;
         setFormData({ ...formData, location: value });
@@ -80,18 +75,11 @@ const AddListing = () => {
                     lat: currentLocation.lat,
                     lng: currentLocation.lon,
                 },
-
                 radius: 1000,
             };
             try {
-                const response = await axiosInstance.post("/autocomplete", {
-                    ...data,
-                });
-                if (response.data.length) {
-                    setSuggestions(response.data);
-                } else {
-                    setSuggestions([]);
-                }
+                const response = await axiosInstance.post("/autocomplete", data);
+                setSuggestions(response.data.length ? response.data : []);
             } catch (error) {
                 console.error("Error fetching place data:", error);
             }
@@ -106,89 +94,63 @@ const AddListing = () => {
 
     const handleSuggestionClick = (suggestion) => {
         const { lat, lng } = suggestion.location;
+        
 
-        setFormData({
-            ...formData,
-            location: suggestion.description,
-            lat: lat,
-            long: lng,
-            placeId: suggestion.place_id,
-            placeDescription: suggestion.description,
-        });
-
-        // Calculate distance from UNT
         const distance = calculateDistance(
             untUniversitycords.lat,
             untUniversitycords.lon,
             lat,
             lng
         );
-        setDistanceFromUNT(distance * 0.621371);
 
-        setSelectedPrediction(suggestion);
+        setFormData({
+            ...formData,
+            location: suggestion.description,
+            lat,
+            long: lng,
+            placeId: suggestion.place_id,
+            placeDescription: suggestion.description,
+            distance: distance,
+        });
+        setDistanceFromUNT(distance * 0.621371);
         setSuggestions([]);
     };
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
         const toRadians = (value) => (value * Math.PI) / 180;
-
-        const earthRadius = 6371; // Radius of the Earth in kilometers
-
-        const lat1Rad = toRadians(lat1);
-        const lon1Rad = toRadians(lon1);
-        const lat2Rad = toRadians(lat2);
-        const lon2Rad = toRadians(lon2);
-
-        const latDiff = lat2Rad - lat1Rad;
-        const lonDiff = lon2Rad - lon1Rad;
-
+        const earthRadius = 6371;
+        const latDiff = toRadians(lat2 - lat1);
+        const lonDiff = toRadians(lon2 - lon1);
         const a =
-            Math.sin(latDiff / 2) * Math.sin(latDiff / 2) +
-            Math.cos(lat1Rad) *
-                Math.cos(lat2Rad) *
-                Math.sin(lonDiff / 2) *
-                Math.sin(lonDiff / 2);
-
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distanceKm = earthRadius * c;
-        return distanceKm.toFixed(2);
+            Math.sin(latDiff / 2) ** 2 +
+            Math.cos(toRadians(lat1)) *
+                Math.cos(toRadians(lat2)) *
+                Math.sin(lonDiff / 2) ** 2;
+        return 2 * earthRadius * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        const dataToSend = {
-            community,
-            location,
-            placeId,
-            placeDescription,
-            lat,
-            long,
-            roomsCount,
-            price,
-            houseArea,
-            houseWidth,
-            bathroomCount,
-            lookingForCount,
-            description,
-            distance: distanceFromUNT,
-        };
+        const dataToSend = new FormData();
+        Object.entries(formData).forEach(([key, value]) =>
+            dataToSend.append(key, value)
+        );
 
         try {
-            const response = await axiosInstance.post(
-                "/add-listing",
-                dataToSend
-            );
+            const response = await axiosInstance.post("/add-listing", dataToSend, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
             if (response.data.error) {
                 toast.error(response.data.error);
-                return;
+            } else {
+                toast.success("Listing added successfully!");
             }
-
-            toast.success("Listing added successfully!");
+            console.log(formData);
         } catch (error) {
             toast.error(
-                "Error adding listing: " + error.response?.data?.message ||
-                    error.message
+                "Error adding listing: " +
+                    (error.response?.data?.message || error.message)
             );
         }
     };
@@ -202,10 +164,25 @@ const AddListing = () => {
                     <input
                         type="text"
                         name="community"
-                        value={community}
+                        value={formData.community}
                         onChange={handleInputChange}
                         className={Styles.input}
                     />
+                </div>
+
+                <div className={Styles.formGroup}>
+                    <label htmlFor="houseImage">House Image:</label>
+                    <input
+                        type="file"
+                        id="houseImage"
+                        name="houseImage"
+                        onChange={handleImageChange}
+                    />
+                    {imagePreviewUrl && (
+                        <div className="image-preview">
+                            <img src={imagePreviewUrl} alt="House Preview" />
+                        </div>
+                    )}
                 </div>
 
                 <div className={Styles.formGroup}>
@@ -213,7 +190,7 @@ const AddListing = () => {
                     <input
                         type="text"
                         name="location"
-                        value={location}
+                        value={formData.location}
                         autoComplete="off"
                         onFocus={getCurrentLocation}
                         onChange={locationChange}
@@ -225,9 +202,7 @@ const AddListing = () => {
                                 <li
                                     key={index}
                                     className={Styles.suggestionItem}
-                                    onClick={() =>
-                                        handleSuggestionClick(suggestion)
-                                    }
+                                    onClick={() => handleSuggestionClick(suggestion)}
                                 >
                                     {suggestion.description}
                                 </li>
@@ -247,7 +222,7 @@ const AddListing = () => {
                     <input
                         type="number"
                         name="houseArea"
-                        value={houseArea}
+                        value={formData.houseArea}
                         onChange={handleInputChange}
                         className={Styles.input}
                         min="0"
@@ -259,7 +234,7 @@ const AddListing = () => {
                     <input
                         type="number"
                         name="houseWidth"
-                        value={houseWidth}
+                        value={formData.houseWidth}
                         onChange={handleInputChange}
                         className={Styles.input}
                         min="0"
@@ -271,7 +246,7 @@ const AddListing = () => {
                     <input
                         type="number"
                         name="bathroomCount"
-                        value={bathroomCount}
+                        value={formData.bathroomCount}
                         onChange={handleInputChange}
                         className={Styles.input}
                         min="0"
@@ -283,7 +258,7 @@ const AddListing = () => {
                     <input
                         type="number"
                         name="lookingForCount"
-                        value={lookingForCount}
+                        value={formData.lookingForCount}
                         onChange={handleInputChange}
                         className={Styles.input}
                         min="0"
@@ -295,7 +270,7 @@ const AddListing = () => {
                     <input
                         type="number"
                         name="roomsCount"
-                        value={roomsCount}
+                        value={formData.roomsCount}
                         onChange={handleInputChange}
                         className={Styles.input}
                         min="1"
@@ -307,7 +282,7 @@ const AddListing = () => {
                     <input
                         type="number"
                         name="price"
-                        value={price}
+                        value={formData.price}
                         onChange={handleInputChange}
                         className={Styles.input}
                         min="1"
@@ -320,7 +295,7 @@ const AddListing = () => {
                         rows="4"
                         type="text"
                         name="description"
-                        value={description}
+                        value={formData.description}
                         onChange={handleInputChange}
                         className={Styles.input}
                     />
