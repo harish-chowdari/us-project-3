@@ -163,7 +163,7 @@ const ViewListings = () => {
             ) : (
                 <ul className={Styles.list}>
                     {filteredListings.map((listing) => (
-                        <li key={listing._id} className={Styles.listItem}>
+                        <div key={listing._id} className={Styles.listItem}>
                             <h3 className={Styles.listItemTitle}>
                                 {listing?.community} (community)
                             </h3>
@@ -207,7 +207,7 @@ const ViewListings = () => {
                                 <strong>Distance from UNT:</strong>{" "}
                                 {(listing?.distance * 0.621371).toFixed(2)} miles
                                 </p>
-                        </li>
+                        </div> 
                     ))}
                 </ul>
             )}
