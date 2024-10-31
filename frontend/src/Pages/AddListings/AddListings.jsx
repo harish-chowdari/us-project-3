@@ -214,6 +214,7 @@ const AddListing = () => {
                         type="text"
                         name="location"
                         value={location}
+                        autoComplete="off"
                         onFocus={getCurrentLocation}
                         onChange={locationChange}
                         className={Styles.input}

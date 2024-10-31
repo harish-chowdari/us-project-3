@@ -79,26 +79,14 @@ const getPlaceDetails = async (req, res) => {
   try {
       const { input, location, radius } = req.body;
 
-        // if (!input) {
-        //     return res.status(200).send({ input: "Input is required" });
-        // }
-
-        // if (!location) {
-        //     return res.status(200).send({ location: "Location is required" });
-        // }
-
-        // if (!radius) {
-        //     return res.status(200).send({ radius: "Radius is required" });
-        // }
-
       const autocompleteResponse = await axios.get(
           `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
           {
               params: {
                   input,
-                  key: 'AIzaSyCRebFx8wnznVAWqDh9cVKcBlwvP0esKio',
-                  ...(location && { location: `${location.lat},${location.lng}` }), // Adds location if provided
-                  ...(radius && { radius }), // Adds radius if provided
+                  key: process.env.GOOGLE_MAPS_API_KEY,
+                  ...(location && { location: `${location.lat},${location.lng}` }),
+                  ...(radius && { radius }), 
                   types: 'establishment'
               },
           }
@@ -111,7 +99,7 @@ const getPlaceDetails = async (req, res) => {
                   {
                       params: {
                           place_id: prediction.place_id,
-                          key: 'AIzaSyCRebFx8wnznVAWqDh9cVKcBlwvP0esKio',
+                          key: process.env.GOOGLE_MAPS_API_KEY,
                       },
                   }
               );
