@@ -199,7 +199,7 @@ const ViewCommunities = () => {
                             </p>
                             <p className={Styles.listItemDetails}>
                                 <strong>Bathroom Count:</strong>{" "}
-                                {listing.bathroomCount}
+                                {listing?.bathroomCount}
                             </p>
                             <p className={Styles.listItemDetails}>
                                 <strong>Looking For Count:</strong>{" "}
