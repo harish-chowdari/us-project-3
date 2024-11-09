@@ -94,11 +94,18 @@ const getListingsBySearch = async (req, res) => {
 
         // Build query object dynamically based on provided filters
         const query = {};
+
         if (roomsCount) query.roomsCount = roomsCount === "more than 5" ? { $gt: 5 } : parseInt(roomsCount);
         if (bathroomCount) query.bathroomCount = bathroomCount === "more than 5" ? { $gt: 5 } : parseInt(bathroomCount);
         if (lookingForCount) query.lookingForCount = lookingForCount === "more than 5" ? { $gt: 5 } : parseInt(lookingForCount);
         if (distance) query.distance = { $lte: parseFloat(distance) };
         if (price) query.price = { $lte: parseFloat(price) };
+
+        // If no filters are provided, return all listings
+        if (Object.keys(query).length === 0) {
+            const allListings = await Listings.find();
+            return res.status(200).json({ allListings });
+        }
 
         const searchedListings = await Listings.find(query);
 
@@ -106,12 +113,13 @@ const getListingsBySearch = async (req, res) => {
             return res.status(200).json({ noResults: "No results found for the selected search criteria." });
         }
 
-       return res.status(200).json({searchedListings: searchedListings});
+        return res.status(200).json({ searchedListings });
     } catch (error) {
         console.error("Error fetching listings:", error);
         res.status(500).json({ message: "Error fetching listings" });
     }
 };
+
 
 const addHouseSearchHistory = async (req, res) => {
     try {

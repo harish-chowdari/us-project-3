@@ -32,7 +32,7 @@ const ViewCommunities = () => {
 
     const handleSearch = async () => {
         try {
-            const response = await axios.get("/all-listings/search", {
+            const response = await axios.get("/all-communities/search", {
                 params: {
                     roomsCount: roomCount,
                     bathroomCount: bathroomCount,
@@ -46,7 +46,7 @@ const ViewCommunities = () => {
                 setSearchedListings(response.data.searchedListings);
                 setSearchClicked(true);
                 if(response.data.searchedListings){
-                    const res = await axios.post("/listings-search-history", {
+                    const res = await axios.post("/communities-search-history", {
                         userId: localStorage.getItem("userId"),
                         roomsCount: roomCount,
                         bathroomCount: bathroomCount,
@@ -55,7 +55,7 @@ const ViewCommunities = () => {
                         price: priceRange,
                     });
     
-                    console.log(res.data);
+                    console.log("community search history",res.data);
                 }
             }
         } 

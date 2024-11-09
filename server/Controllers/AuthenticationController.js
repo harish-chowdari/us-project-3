@@ -26,8 +26,16 @@ async function SigUp(req, res) {
         roomsCount: 0,
         bathroomCount: 0,
         lookingForCount: 0,
-        distance: 0
-      }
+        distance: 0,
+        price: 0
+      },
+      communitySearchHistory: {
+        roomsCount: 0,
+        bathroomCount: 0,
+        lookingForCount: 0,
+        distance: 0,
+        price: 0
+      },
     });
 
     const d = await data.save();

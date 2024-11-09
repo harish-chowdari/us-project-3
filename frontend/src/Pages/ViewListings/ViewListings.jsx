@@ -45,6 +45,7 @@ const ViewListings = () => {
             if(response.data){
                 setSearchedListings(response.data.searchedListings);
                 setSearchClicked(true);
+                console.log(response.data);
                 if(response.data.searchedListings){
                     const res = await axios.post("/listings-search-history", {
                         userId: localStorage.getItem("userId"),
