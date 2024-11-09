@@ -8,6 +8,7 @@ import ViewListings from "./Pages/ViewListings/ViewListings";
 import Layout from "./Layout/Layout";
 import AddListing from "./Pages/AddListings/AddListings";
 import Navbar from "./Components/Navbar/Navbar";
+import ViewCommunities from "./Pages/viewCommunities/viewCommunities";
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
           
             <Route path="add-listings" element={<AddListing />}  />
             <Route path="view-listings" element={<ViewListings />} />
+            <Route path="view-communities" element={<ViewCommunities />} />
           </Route>
 
         </Routes>

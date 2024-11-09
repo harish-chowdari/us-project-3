@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../axios";
-import Styles from "./ViewListings.module.css";
+import Styles from "./viewCommunities.module.css";
 
-const ViewListings = () => {
+const ViewCommunities = () => {
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -15,7 +15,8 @@ const ViewListings = () => {
     useEffect(() => {
         const fetchListings = async () => {
             try {
-                const response = await axios.get("/all-listings");
+                const response = await axios.get("/all-communities");
+                console.log(response.data);
                 setListings(response.data);
             } catch (err) {
                 console.error("Error fetching listings", err);
@@ -72,8 +73,9 @@ const ViewListings = () => {
     return (
         <div className={Styles.container}>
             <div className={Styles.header}>
-                <h2 className={Styles.title}>All Listings</h2>
+                <h2 className={Styles.title}>View Communities</h2>
             </div>
+            
 
             <div className={Styles.filters}>
                 <div className={Styles.selectContainer}>
@@ -215,4 +217,4 @@ const ViewListings = () => {
     );
 };
 
-export default ViewListings;
+export default ViewCommunities;
