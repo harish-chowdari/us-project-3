@@ -4,8 +4,10 @@ import Styles from "./ViewListings.module.css";
 
 const ViewListings = () => {
     const [listings, setListings] = useState([]);
+    const [searchedListings, setSearchedListings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchClicked, setSearchClicked] = useState(false);
     const [searchDistance, setSearchDistance] = useState("");
     const [roomCount, setRoomCount] = useState("");
     const [bathroomCount, setBathroomCount] = useState("");
@@ -28,53 +30,55 @@ const ViewListings = () => {
         fetchListings();
     }, []);
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    const handleSearch = async () => {
+        try {
+            const response = await axios.get("/all-listings/search", {
+                params: {
+                    roomsCount: roomCount,
+                    bathroomCount: bathroomCount,
+                    lookingForCount: lookingForCount,
+                    distance: searchDistance,
+                    price: priceRange,
+                },
+            });
 
-    if (error) {
-        return <div>{error}</div>;
-    }
+            if(response.data){
+                setSearchedListings(response.data.searchedListings);
+                setSearchClicked(true);
+                if(response.data.searchedListings){
+                    const res = await axios.post("/listings-search-history", {
+                        userId: localStorage.getItem("userId"),
+                        roomsCount: roomCount,
+                        bathroomCount: bathroomCount,
+                        lookingForCount: lookingForCount,
+                        distance: searchDistance,
+                        price: priceRange,
+                    });
+    
+                    console.log(res.data);
+                }
+                
+               
+                
+            }
+        } 
+        
+        catch (err) {
+            console.error("Error fetching searched listings", err);
+            setError("No listings Found");
+        }
+    };
 
-    const filteredListings = listings.filter((listing) => {
-        const matchesDistance =
-            searchDistance === "" ||
-            (searchDistance === "5" && listing.distance <= 5) ||
-            (searchDistance === "10" && listing.distance <= 10) ||
-            (searchDistance === "15" && listing.distance <= 15);
-        const matchesRoomCount =
-            roomCount === "" ||
-            (roomCount === "more than 5"
-                ? listing.roomsCount > 5
-                : listing.roomsCount === parseInt(roomCount));
-        const matchesBathroomCount =
-            bathroomCount === "" ||
-            (bathroomCount === "more than 5"
-                ? listing.bathroomCount > 5
-                : listing.bathroomCount === parseInt(bathroomCount));
-        const matchesLookingForCount =
-            lookingForCount === "" ||
-            (lookingForCount === "more than 5"
-                ? listing.lookingForCount > 5
-                : listing.lookingForCount === parseInt(lookingForCount));
-        const matchesPriceRange =
-            priceRange === "" || listing.price <= parseInt(priceRange);
+    const listingsToDisplay = searchClicked ? searchedListings : listings;
 
-        return (
-            matchesDistance &&
-            matchesRoomCount &&
-            matchesBathroomCount &&
-            matchesLookingForCount &&
-            matchesPriceRange
-        );
-    });
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
 
     return (
         <div className={Styles.container}>
             <div className={Styles.header}>
-                <h2 className={Styles.title}>All Listings</h2>
+                <h2 className={Styles.title}>{searchClicked ? "Searched Listings" : "Listings"}</h2>
             </div>
-
             <div className={Styles.filters}>
                 <div className={Styles.selectContainer}>
                     <label></label>
@@ -90,7 +94,6 @@ const ViewListings = () => {
                     </select>
                 </div>
 
-                {/* Other Filters */}
                 <div className={Styles.selectContainer}>
                     <label> </label>
                     <select
@@ -157,17 +160,17 @@ const ViewListings = () => {
                         ))}
                     </select>
                 </div>
+                <button onClick={handleSearch}>Search</button>
             </div>
-            {filteredListings.length === 0 ? (
-                <p className={Styles.noListings}>No listings found</p>
-            ) : (
+
+            {listingsToDisplay && listingsToDisplay.length > 0 ? (
                 <ul className={Styles.list}>
-                    {filteredListings.map((listing) => (
+                    {listingsToDisplay.map((listing) => (
                         <div key={listing._id} className={Styles.listItem}>
                             <h3 className={Styles.listItemTitle}>
-                                {listing?.community} 
+                                {listing?.community}
                             </h3>
-                            <img 
+                            <img
                                 className={Styles.listItemImage}
                                 src={listing?.houseImage}
                                 alt={listing?.community}
@@ -206,10 +209,12 @@ const ViewListings = () => {
                             <p className={Styles.listItemDetails}>
                                 <strong>Distance from UNT:</strong>{" "}
                                 {(listing?.distance * 0.621371).toFixed(2)} miles
-                                </p>
-                        </div> 
+                            </p>
+                        </div>
                     ))}
                 </ul>
+            ) : (
+                <p className={Styles.noListings}>No listings found</p>
             )}
         </div>
     );

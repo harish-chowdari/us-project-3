@@ -1,6 +1,7 @@
 const Listings = require("../Models/ListingsModel");
 const axios = require("axios");
 const S3 = require("../s3");
+const UserDetails = require("../Models/AuthenticationModel");
 
 async function addListing(req, res) {
     try {
@@ -87,6 +88,60 @@ const getAllListings = async (req, res) => {
     }
 };
 
+const getListingsBySearch = async (req, res) => {
+    try {
+        const { roomsCount, bathroomCount, lookingForCount, distance, price } = req.query;
+
+        // Build query object dynamically based on provided filters
+        const query = {};
+        if (roomsCount) query.roomsCount = roomsCount === "more than 5" ? { $gt: 5 } : parseInt(roomsCount);
+        if (bathroomCount) query.bathroomCount = bathroomCount === "more than 5" ? { $gt: 5 } : parseInt(bathroomCount);
+        if (lookingForCount) query.lookingForCount = lookingForCount === "more than 5" ? { $gt: 5 } : parseInt(lookingForCount);
+        if (distance) query.distance = { $lte: parseFloat(distance) };
+        if (price) query.price = { $lte: parseFloat(price) };
+
+        const searchedListings = await Listings.find(query);
+
+        if (searchedListings.length === 0) {
+            return res.status(200).json({ noResults: "No results found for the selected search criteria." });
+        }
+
+       return res.status(200).json({searchedListings: searchedListings});
+    } catch (error) {
+        console.error("Error fetching listings:", error);
+        res.status(500).json({ message: "Error fetching listings" });
+    }
+};
+
+const addHouseSearchHistory = async (req, res) => {
+    try {
+        const { userId, roomsCount, bathroomCount, lookingForCount, distance, price } = req.body;
+        const user = await UserDetails.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ error: "User does not exist" });
+        }
+
+        // Directly update the houseSearchHistory object
+        user.houseSearchHistory = {
+            roomsCount,
+            bathroomCount,
+            lookingForCount,
+            distance,
+            price
+        };
+
+        await user.save();
+        console.log("Searched history updated successfully");
+        
+        return res.status(200).json({ searchedHistory: "Searched history updated successfully" });
+    } catch (error) {
+        console.error("Error adding search history:", error);
+        res.status(500).json({ error: "Error adding search history" });
+    }
+};
+
+
 const getListingById = async (req, res) => {
     try {
         const data = await Listings.findById(req.params.id);
@@ -94,7 +149,7 @@ const getListingById = async (req, res) => {
     } catch (error) {
         console.log(error);
     }
-};
+};  
 
 const getPlaceDetails = async (req, res) => {
     try {
@@ -146,6 +201,8 @@ const getPlaceDetails = async (req, res) => {
 module.exports = {
     addListing,
     getAllListings,
+    getListingsBySearch,
+    addHouseSearchHistory,
     getListingById,
     getPlaceDetails,
 };

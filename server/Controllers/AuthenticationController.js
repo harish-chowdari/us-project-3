@@ -22,6 +22,12 @@ async function SigUp(req, res) {
       password,
       otp: "",
       otpExpiresAt: "",
+      houseSearchHistory: {
+        roomsCount: 0,
+        bathroomCount: 0,
+        lookingForCount: 0,
+        distance: 0
+      }
     });
 
     const d = await data.save();

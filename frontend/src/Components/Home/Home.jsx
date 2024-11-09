@@ -14,7 +14,7 @@ const Home = () => {
                 <p className={Styles.subHeading}>Find your ideal place or roommate with ease!</p>
                 <button
                     className={`${Styles.button} ${Styles.searchButton}`}
-                    onClick={() => Navigate(`/home/${userId}/view-listings`)}
+                    onClick={() => Navigate(`/home/${userId}/view-communities`)}
                 >
                     <FaSearch className={Styles.icon} />
                     Search for House
