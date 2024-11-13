@@ -50,6 +50,19 @@ const CommunitySchema = new mongoose.Schema(
         distance: {
             type: Number,
         },
+
+        reviews: [{
+            userId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+            rating: {
+                type: Number,
+            },
+            feedback: {
+                type: String,
+            }
+        }]
     },
     { timestamps: true }
 );
