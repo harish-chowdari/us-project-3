@@ -57,7 +57,7 @@
 
 .listItem {
   background-color: #fff;
-  padding: 20px;
+  padding: 10px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s, box-shadow 0.2s;
@@ -75,7 +75,7 @@
 }
 
 .listItemDetails {
-  font-size: 16px;
+  font-size: 14px;
   color: #555;
   line-height: 1.6;
 }
@@ -85,7 +85,7 @@
 }
 
 .listItemDetails:not(:last-child) {
-  margin-bottom: 8px;
+  margin-bottom: px;
 }
 
 .filters{
@@ -146,4 +146,53 @@
   .search {
     width: 200px;
   }
+}
+
+.reviewContainer{
+  display: flex;
+  flex-direction: column;
+  gap:0px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.reviewTitle{
+  font-size: 15px;
+}
+
+.list p{
+  margin: 0px;
+}
+
+
+
+.starContainer{
+  display: flex;
+  gap: 10px;
+  column-gap: 10px;
+  flex-wrap: wrap;
+  align-items:  center;
+  margin-bottom: 5px;
+}
+
+.reviewContainer textarea{
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  margin-bottom: 5px;
+}
+
+.reviewContainer button{
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
