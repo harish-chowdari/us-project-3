@@ -1,4 +1,5 @@
 const Schema = require("../Models/AuthenticationModel.js");
+const nodemailer = require("nodemailer");
 
 async function SigUp(req, res) {
   try {
@@ -89,6 +90,10 @@ async function getUserName(req, res) {
     console.log(error);
   }
 }
+
+
+
+
 
 module.exports = {
   SigUp,
