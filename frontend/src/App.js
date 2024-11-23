@@ -9,6 +9,8 @@ import Layout from "./Layout/Layout";
 import AddListing from "./Pages/AddListings/AddListings";
 import Navbar from "./Components/Navbar/Navbar";
 import ViewCommunities from "./Pages/viewCommunities/viewCommunities";
+import UserListings from "./Pages/UserListings/UserListings";
+import EditListing from "./Pages/EditListing/EditListing";
 
 const App = () => {
   return (
@@ -27,6 +29,8 @@ const App = () => {
             <Route path="add-listings" element={<AddListing />}  />
             <Route path="view-listings" element={<ViewListings />} />
             <Route path="view-communities" element={<ViewCommunities />} />
+            <Route path="user-listings" element={<UserListings />} />
+            <Route path="edit-listing/:listingId" element={<EditListing />} />
           </Route>
 
         </Routes>

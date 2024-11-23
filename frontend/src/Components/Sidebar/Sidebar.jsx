@@ -38,6 +38,15 @@ const Sidebar = () => {
           View Communities
         </NavLink>}
 
+        {
+          <NavLink 
+            to={`/home/${userId}/user-listings`} 
+            className={({ isActive }) => (isActive ? Styles.activeLink : Styles.link)}
+          >
+            My Listings
+          </NavLink>
+        }
+
         <div className={Styles.spacer}></div>
         
         <Link to="/" onClick={() => localStorage.removeItem("userId")} className={Styles.logout}>Logout</Link>

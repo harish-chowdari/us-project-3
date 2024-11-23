@@ -10,23 +10,8 @@ async function addListing(req, res) {
             req.files.houseImage[0]
         );
 
-        const {
-            community,
-            houseImage,
-            location,
-            placeId,
-            placeDescription,
-            lat,
-            long,
-            roomsCount,
-            price,
-            houseArea,
-            houseWidth,
-            bathroomCount,
-            lookingForCount,
-            description,
-            distance,
-        } = req.body;
+        const { userId, community, houseImage, location, placeId, placeDescription, lat, long, roomsCount, price,
+            houseArea, houseWidth, bathroomCount, lookingForCount, description, distance, } = req.body;
 
         const loc = {
             placeId,
@@ -35,37 +20,14 @@ async function addListing(req, res) {
             long,
         };
 
-        if (
-            !community ||
-            !location ||
-            !placeId ||
-            !placeDescription ||
-            !lat ||
-            !long ||
-            !roomsCount ||
-            !price ||
-            !houseArea ||
-            !houseWidth ||
-            !bathroomCount ||
-            !lookingForCount ||
-            !description ||
-            !distance
+        if ( !community || !location || !placeId || !placeDescription || !lat || !long || !roomsCount || 
+            !price || !houseArea || !houseWidth || !bathroomCount || !lookingForCount || !description || !distance
         ) {
             return res.json({ error: "Please fill all the fields" });
         }
 
-        const data = new Listings({
-            community,
-            houseImage: response.Location,
-            location: loc,
-            roomsCount,
-            price,
-            description,
-            houseArea,
-            houseWidth,
-            bathroomCount,
-            lookingForCount,
-            distance,
+        const data = new Listings({ userId, community, houseImage: response.Location, location: loc,
+            roomsCount, price, description, houseArea, houseWidth, bathroomCount, lookingForCount, distance,
         });
         const d = await data.save();
         if (d) {
@@ -79,10 +41,94 @@ async function addListing(req, res) {
     }
 }
 
+
+const updateListing = async (req, res) => {
+    try {
+        const listingId = req.params.id;
+
+        // Find the existing listing
+        const existingListing = await Listings.findById(listingId);
+        if (!existingListing) {
+            return res.status(404).json({ error: "Listing not found" });
+        }
+
+        // Handle file upload for house image
+        let houseImage = existingListing.houseImage;
+        if (req.files && req.files.houseImage && req.files.houseImage.length > 0) {
+            const uploadedImage = await S3.uploadFile(
+                process.env.AWS_BUCKET_NAME,
+                req.files.houseImage[0]
+            );
+            houseImage = uploadedImage.Location;
+        }
+
+        const {
+            community,
+            placeId,
+            placeDescription,
+            lat,
+            long,
+            roomsCount,
+            price,
+            description,
+            houseArea,
+            houseWidth,
+            bathroomCount,
+            lookingForCount,
+            distance
+        } = req.body;
+
+        // Construct location object
+        const loc = {
+            placeId: placeId || existingListing.location.placeId,
+            placeDescription: placeDescription || existingListing.location.placeDescription,
+            lat: lat || existingListing.location.lat,
+            long: long || existingListing.location.long
+        };
+
+        // Create updated data object
+        const updatedData = {
+            community: community || existingListing.community,
+            location: loc,
+            houseImage, // Updated or existing image
+            roomsCount: roomsCount || existingListing.roomsCount,
+            price: price || existingListing.price,
+            description: description || existingListing.description,
+            houseArea: houseArea || existingListing.houseArea,
+            houseWidth: houseWidth || existingListing.houseWidth,
+            bathroomCount: bathroomCount || existingListing.bathroomCount,
+            lookingForCount: lookingForCount || existingListing.lookingForCount,
+            distance: distance || existingListing.distance
+        };
+
+        // Validate required fields (if necessary)
+        if (!updatedData.community || !updatedData.roomsCount || !updatedData.price) {
+            return res.status(400).json({ error: "Required fields are missing" });
+        }
+
+        // Update the listing
+        const updatedListing = await Listings.findByIdAndUpdate(listingId, updatedData, { new: true });
+
+        if (!updatedListing) {
+            return res.status(500).json({ error: "Failed to update listing" });
+        }
+
+        return res.status(200).json({
+            message: "Listing updated successfully",
+            data: updatedListing
+        });
+    } catch (error) {
+        console.error("Error updating listing:", error);
+        return res.status(500).json({ error: "An error occurred while updating the listing" });
+    }
+};
+
+
+
 const getAllListings = async (req, res) => {
     try {
         const data = await Listings.find();
-        res.send(data);
+        return res.send(data);
     } catch (error) {
         console.log(error);
     }
@@ -116,7 +162,7 @@ const getListingsBySearch = async (req, res) => {
         return res.status(200).json({ searchedListings });
     } catch (error) {
         console.error("Error fetching listings:", error);
-        res.status(500).json({ message: "Error fetching listings" });
+        return res.status(500).json({ message: "Error fetching listings" });
     }
 };
 
@@ -145,7 +191,7 @@ const addHouseSearchHistory = async (req, res) => {
         return res.status(200).json({ searchedHistory: "Searched history updated successfully" });
     } catch (error) {
         console.error("Error adding search history:", error);
-        res.status(500).json({ error: "Error adding search history" });
+        return res.status(500).json({ error: "Error adding search history" });
     }
 };
 
@@ -153,7 +199,8 @@ const addHouseSearchHistory = async (req, res) => {
 const getListingById = async (req, res) => {
     try {
         const data = await Listings.findById(req.params.id);
-        res.send(data);
+        return res.json(data);
+        
     } catch (error) {
         console.log(error);
     }
@@ -199,10 +246,10 @@ const getPlaceDetails = async (req, res) => {
             })
         );
 
-        res.json(placeDetails);
+        return res.json(placeDetails);
     } catch (error) {
         console.error(error);
-        res.status(500).send("Error fetching data");
+        return res.status(500).send("Error fetching data");
     }
 };
 
@@ -229,7 +276,6 @@ const sendMatchedListingsEmail = async (req, res) => {
 
             const { roomsCount, bathroomCount, lookingForCount, distance, price } = user.houseSearchHistory;
 
-
             const query = {};
 
             if (roomsCount) query.roomsCount = roomsCount === "more than 5" ? { $gt: "5" } : roomsCount;
@@ -239,10 +285,6 @@ const sendMatchedListingsEmail = async (req, res) => {
             if (price) query.price = { $lte: price };
 
             const matchedListings = await Listings.find(query);
-
-
-            const isEmpty = (obj) => Object.keys(obj).length === 0;
-
             
 
             if (matchedListings.length > 0 ) {
@@ -259,7 +301,6 @@ const sendMatchedListingsEmail = async (req, res) => {
                         .join("")}`,
                 };
 
-                // Send the email to the current user
                 await transporter.sendMail(mailOptions);
             }
         }
@@ -268,7 +309,19 @@ const sendMatchedListingsEmail = async (req, res) => {
         return res.status(200).json({ message: "Emails sent with matched listings for each user." });
     } catch (error) {
         console.error("Error checking for matched listings:", error);
-        res.status(500).json({ error: "Error checking for matched listings" });
+        return res.status(500).json({ error: "Error checking for matched listings" });
+    }
+};
+
+
+const getListingsByUserId = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const listings = await Listings.find({ userId });
+        return res.json(listings);
+    } catch (error) {
+        console.error("Error fetching listings:", error);
+        return res.status(500).json({ message: "Error fetching listings" });
     }
 };
 
@@ -283,6 +336,8 @@ module.exports = {
     addHouseSearchHistory,
     getListingById,
     getPlaceDetails,
-    sendMatchedListingsEmail
+    sendMatchedListingsEmail,
+    getListingsByUserId,
+    updateListing
     
 };

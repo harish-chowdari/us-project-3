@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const ListingSchema = new mongoose.Schema(
     {
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+        },
         community: {
             type: String,
         },

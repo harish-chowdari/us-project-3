@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axiosInstance from "../../axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Styles from "./AddListings.module.css";
+import Styles from "./EditListing.module.css";
+import { useParams } from "react-router-dom";
 
-const AddListing = () => {
+const EditListing = () => {
+    const listingId = useParams().listingId;
     const [suggestions, setSuggestions] = useState([]);
     const [currentLocation, setCurrentLocation] = useState({
         lat: null,
@@ -39,6 +41,25 @@ const AddListing = () => {
         distance: "",
     });
 
+    useEffect(() => {
+        // Fetch the listing data when the component is mounted for editing
+        const fetchListingData = async () => {
+            try {
+                const response = await axiosInstance.get(`/listing/${listingId}`);
+                setFormData(response.data);
+                console.log(response.data);
+                setImagePreviewUrl(response.data.houseImage);
+                setDistanceFromUNT(response.data.distance);
+            } catch (error) {
+                toast.error("Error fetching listing data: " + error.message);
+            }
+        };
+
+        if (listingId) {
+            fetchListingData();
+        }
+    }, [listingId]);
+
     const getCurrentLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -47,9 +68,7 @@ const AddListing = () => {
                     setCurrentLocation({ lat: latitude, lon: longitude });
                 },
                 (error) => {
-                    toast.error(
-                        "Could not retrieve location: " + error.message
-                    );
+                    toast.error("Could not retrieve location: " + error.message);
                 }
             );
         } else {
@@ -116,6 +135,7 @@ const AddListing = () => {
             distance: distance,
         });
         setDistanceFromUNT(distance * 0.621371);
+        console.log(distanceFromUNT);
         setSuggestions([]);
     };
 
@@ -132,6 +152,7 @@ const AddListing = () => {
         return 2 * earthRadius * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     };
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const dataToSend = new FormData();
@@ -140,27 +161,29 @@ const AddListing = () => {
         );
 
         try {
-            const response = await axiosInstance.post("/add-listing", dataToSend, {
+            const response = await axiosInstance.put(`/update-listing/${listingId}`, dataToSend, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
             if (response.data.error) {
                 toast.error(response.data.error);
             } else {
-                toast.success("Listing added successfully!");
+                toast.success("Listing updated successfully!");
             }
             console.log(formData);
         } catch (error) {
             toast.error(
-                "Error adding listing: " +
+                "Error updating listing: " +
                     (error.response?.data?.message || error.message)
             );
         }
     };
 
+    console.log(formData.location.placeDescription)
+
     return (
         <div className={Styles.container}>
-            <h2 className={Styles.heading}>Add Listing</h2>
+            <h2 className={Styles.heading}>Edit Listing</h2>
             <form className={Styles.form} onSubmit={handleSubmit}>
                 <div className={Styles.formGroup}>
                     <label className={Styles.label}>Community:</label>
@@ -182,8 +205,12 @@ const AddListing = () => {
                         onChange={handleImageChange}
                     />
                     {imagePreviewUrl && (
-                        <div >
-                            <img className={Styles.imagePreview} src={imagePreviewUrl} alt="House Preview" />
+                        <div className={Styles.imagePreviewContainer}>
+                            <img
+                                className={Styles.imagePreview}
+                                src={imagePreviewUrl}
+                                alt="House Preview"
+                            />
                         </div>
                     )}
                 </div>
@@ -193,7 +220,7 @@ const AddListing = () => {
                     <input
                         type="text"
                         name="location"
-                        value={formData.location}
+                        value={formData.location.placeDescription}
                         autoComplete="off"
                         onFocus={getCurrentLocation}
                         onChange={locationChange}
@@ -288,15 +315,13 @@ const AddListing = () => {
                         value={formData.price}
                         onChange={handleInputChange}
                         className={Styles.input}
-                        min="1"
+                        min="0"
                     />
                 </div>
 
                 <div className={Styles.formGroup}>
                     <label className={Styles.label}>Description:</label>
                     <textarea
-                        rows="4"
-                        type="text"
                         name="description"
                         value={formData.description}
                         onChange={handleInputChange}
@@ -304,14 +329,15 @@ const AddListing = () => {
                     />
                 </div>
 
-                <button onClick={handleSubmit} className={Styles.submitButton}>
-                    Add Listing
-                </button>
+                <div className={Styles.formGroup}>
+                    <button type="submit" className={Styles.submitButton}>
+                        Update Listing
+                    </button>
+                </div>
             </form>
-
             <ToastContainer />
         </div>
     );
 };
 
-export default AddListing;
+export default EditListing;

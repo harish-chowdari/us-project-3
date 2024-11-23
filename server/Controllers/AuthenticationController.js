@@ -93,8 +93,6 @@ async function getUserName(req, res) {
 
 
 
-
-
 module.exports = {
   SigUp,
   Login,
