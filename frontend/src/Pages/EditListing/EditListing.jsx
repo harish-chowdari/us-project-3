@@ -15,6 +15,8 @@ const EditListing = () => {
     const [distanceFromUNT, setDistanceFromUNT] = useState(null);
     const [imagePreviewUrl, setImagePreviewUrl] = useState("");
 
+    const [inputLocation, setInputLocation] = useState("");
+
     const untUniversitycords = {
         lat: 33.207488,
         lon: -97.1525862,
@@ -42,12 +44,12 @@ const EditListing = () => {
     });
 
     useEffect(() => {
-        // Fetch the listing data when the component is mounted for editing
-        const fetchListingData = async () => {
+        const getListingsData = async () => {
             try {
                 const response = await axiosInstance.get(`/listing/${listingId}`);
                 setFormData(response.data);
-                console.log(response.data);
+                setInputLocation(response.data.location);
+                console.log(response.data.location);
                 setImagePreviewUrl(response.data.houseImage);
                 setDistanceFromUNT(response.data.distance);
             } catch (error) {
@@ -56,7 +58,7 @@ const EditListing = () => {
         };
 
         if (listingId) {
-            fetchListingData();
+            getListingsData();
         }
     }, [listingId]);
 
@@ -155,10 +157,21 @@ const EditListing = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+
+        const locationValue = formData.location.length ? formData.location : [{ 
+            placeId: formData.placeId, 
+            placeDescription: formData.placeDescription, 
+            lat: formData.lat, 
+            long: formData.long 
+        }];
+    
         const dataToSend = new FormData();
-        Object.entries(formData).forEach(([key, value]) =>
+        Object.entries({ ...formData, location: locationValue }).forEach(([key, value]) =>
             dataToSend.append(key, value)
+        
         );
+        console.log(dataToSend);
 
         try {
             const response = await axiosInstance.put(`/update-listing/${listingId}`, dataToSend, {
@@ -179,7 +192,8 @@ const EditListing = () => {
         }
     };
 
-    console.log(formData.location.placeDescription)
+
+    // Array.isArray() &&
 
     return (
         <div className={Styles.container}>
@@ -220,12 +234,28 @@ const EditListing = () => {
                     <input
                         type="text"
                         name="location"
-                        value={formData.location.placeDescription}
+                        value={formData.location[0]?.placeDescription}
+                        autoComplete="off"
+                        onFocus={getCurrentLocation}
+                        onChange={locationChange}
+                        
+                        className={Styles.input}
+                        hidden={!formData.location[0]?.placeDescription}
+                        placeholder="Search for a location..."
+                    />
+                    <input 
+                    id = "location2"
+                        type="text"
+                        name="location"
+                        value={formData.location}
                         autoComplete="off"
                         onFocus={getCurrentLocation}
                         onChange={locationChange}
                         className={Styles.input}
+                        hidden={formData.location[0]?.placeDescription}
+                        placeholder="Search for a location"
                     />
+
                     {suggestions.length > 0 && (
                         <ul className={Styles.suggestionsList}>
                             {suggestions.map((suggestion, index) => (
@@ -243,7 +273,7 @@ const EditListing = () => {
 
                 {distanceFromUNT && (
                     <div className={Styles.distanceInfo}>
-                        Distance from UNT: {distanceFromUNT.toFixed(2)} miles
+                        Distance from UNT: {(distanceFromUNT * 0.621371).toFixed(2)} miles
                     </div>
                 )}
 

@@ -80,10 +80,10 @@ const updateListing = async (req, res) => {
 
         // Construct location object
         const loc = {
-            placeId: placeId || existingListing.location.placeId,
-            placeDescription: placeDescription || existingListing.location.placeDescription,
-            lat: lat || existingListing.location.lat,
-            long: long || existingListing.location.long
+            placeId: placeId || existingListing.location[0].placeId,
+            placeDescription: placeDescription || existingListing.location[0].placeDescription,
+            lat: lat || existingListing.location[0].lat,
+            long: long || existingListing.location[0].long
         };
 
         // Create updated data object
