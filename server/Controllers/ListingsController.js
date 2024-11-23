@@ -296,7 +296,7 @@ const sendMatchedListingsEmail = async (req, res) => {
                     text: `We found some listings that match your search criteria:\n\n${matchedListings
                         .map(
                             (listing) =>
-                                `Community: ${listing.community}\nPrice: ${listing.price}\nRooms: ${listing.roomsCount}\n\n`
+                                `Community: ${listing.community}\n Location: ${listing.location[0].placeDescription}\nPrice: ${listing.price}\nRooms: ${listing.roomsCount}\n\n`
                         )
                         .join("")}`,
                 };
@@ -306,12 +306,17 @@ const sendMatchedListingsEmail = async (req, res) => {
         }
         console.log("Emails sent with matched listings for each user.");
 
-        return res.status(200).json({ message: "Emails sent with matched listings for each user." });
     } catch (error) {
         console.error("Error checking for matched listings:", error);
-        return res.status(500).json({ error: "Error checking for matched listings" });
     }
 };
+
+// run cron 
+// const cron = require("node-cron");
+// cron.schedule("*/5 * * * * *", () => {
+//     console.log("Emails sent with matched listings for each user.");
+//     sendMatchedListingsEmail();
+// });
 
 
 const getListingsByUserId = async (req, res) => {

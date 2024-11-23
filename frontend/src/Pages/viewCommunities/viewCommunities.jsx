@@ -2,7 +2,21 @@ import React, { useEffect, useState } from "react";
 import axios from "../../axios";
 import Styles from "./viewCommunities.module.css";
 import { ToastContainer, toast } from "react-toastify";
-import {FaStar} from "react-icons/fa";
+import {FaStar, FaMapMarkerAlt} from "react-icons/fa";
+
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+
+
+// Fix marker icon issues
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+});
 
 const ViewCommunities = () => {
     const [listings, setListings] = useState([]);
@@ -21,7 +35,28 @@ const ViewCommunities = () => {
 
     const [ratedListing, setRatedListing] = useState(false);
 
+    const [defaultLat, setDefaultLat] = useState(0);
+    const [defaultLong, setDefaultLong] = useState(0);
+
     const emojiReactions = ["😡", "😕", "😐", "😊", "😁"];
+
+
+
+const MapUpdater = ({ lat, lng }) => {
+    const map = useMap();
+    useEffect(() => {
+        if (lat && lng) {
+            map.setView([lat, lng], 13); // Update the map view
+        }
+    }, [lat, lng, map]);
+    return null;
+};
+
+    const handleLocationView = (lat,long) => {
+        setDefaultLat(lat)
+        setDefaultLong(long)
+        console.log(lat,long)
+    }
 
     const handleReview = async (listingId) => {
         toast.dismiss();
@@ -111,7 +146,7 @@ const ViewCommunities = () => {
                 setSearchClicked(true);
                 console.log(response.data);
                 if (response.data.searchedListings) {
-                    const res = await axios.post("/listings-search-history", {
+                    const res = await axios.post("/communities-search-history", {
                         userId: localStorage.getItem("userId"),
                         roomsCount: roomCount,
                         bathroomCount: bathroomCount,
@@ -250,9 +285,9 @@ const ViewCommunities = () => {
                                                 : "No ratings yet"}
                                         
                                         </p>
-                                        {/* show average star filledd */}
                                         
-                                        ({listing?.reviews && listing?.reviews.length })
+                                        <span style={{marginTop:"5px"}}>({listing?.reviews && listing?.reviews.length })</span>
+                                        <FaMapMarkerAlt size={17} style={{ color: "blue", cursor: "pointer", marginTop: "5px", marginLeft: "5px" }} onClick={() => handleLocationView(listing.location[0].lat, listing.location[0].long)}>Location</FaMapMarkerAlt>
                                     </div>
                                     
                                 </div>
@@ -331,9 +366,49 @@ const ViewCommunities = () => {
                     ))}
                 </ul>
 
-                <div className={Styles.mapContainer}>
-                 map Here
-                 </div>
+                    <div className={Styles.mapContainer}>
+                    
+                        <MapContainer
+                            center={[defaultLat || 33.207488, defaultLong || -97.1525862]} // Default center if no location is selected
+                            zoom={defaultLat && defaultLong ? 13 : 5} // Zoom closer if a location is selected
+                            style={{ height: "400px", width: "100%" }}
+                        >
+                            <TileLayer
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            />
+                            <MapUpdater lat={defaultLat} lng={defaultLong} />
+
+                            {/* Render all markers if no specific location is selected */}
+                            {(!defaultLat && !defaultLong) &&
+                                listingsToDisplay.map((listing) => (
+                                    <Marker
+                                        key={listing._id}
+                                        position={[
+                                            listing.location[0].lat,
+                                            listing.location[0].long,
+                                        ]}
+                                    >
+                                        <Popup>
+                                            <strong>{listing.community}</strong>
+                                            <br />
+                                            {listing.location[0].placeDescription}
+                                        </Popup>
+                                    </Marker>
+                                ))}
+
+                            {/* Render only the selected marker */}
+                            {(defaultLat && defaultLong) && (
+                                <Marker position={[defaultLat, defaultLong]}>
+                                    <Popup>
+                                        {defaultLat},{" "}
+                                        {defaultLong}
+                                    </Popup>
+                                </Marker>
+                            )}
+                        </MapContainer>
+                    </div>
+
                 </div>
 
 
