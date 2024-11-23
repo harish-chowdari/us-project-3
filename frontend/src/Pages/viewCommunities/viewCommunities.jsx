@@ -80,6 +80,7 @@ const ViewCommunities = () => {
             try {
                 const response = await axios.get("/all-communities");
                 setListings(response.data);
+                console.log(response.data);
             } catch (err) {
                 console.error("Error fetching listings", err);
                 setError("No listings Found");
@@ -90,6 +91,8 @@ const ViewCommunities = () => {
 
         fetchListings();
     }, []);
+
+    
 
     const handleSearch = async () => {
         try {
@@ -223,54 +226,76 @@ const ViewCommunities = () => {
             </div>
 
             {listingsToDisplay && listingsToDisplay.length > 0 ? (
+                <div className={Styles.listContainer}>
                 <ul className={Styles.list}>
                     {listingsToDisplay.map((listing) => (
                         <div key={listing._id} className={Styles.listItem}>
-                            <h3 className={Styles.listItemTitle}>
-                                {listing?.community}
-                            </h3>
-                            <img
-                                className={Styles.listItemImage}
-                                src={listing?.houseImage}
-                                alt={listing?.community}
-                            />
-                            <p className={Styles.listItemDetails}>
-                                <strong>Address:</strong>{" "}
-                                {listing?.location[0]?.placeDescription}
-                            </p>
-                            <p className={Styles.listItemDetails}>
-                                <strong>Rooms Count:</strong>{" "}
-                                {listing?.roomsCount}
-                            </p>
-                            <p className={Styles.listItemDetails}>
-                                <strong>Price:</strong> ${listing?.price}
-                            </p>
-                            <p className={Styles.listItemDetails}>
-                                <strong>Description:</strong>{" "}
-                                {listing?.description}
-                            </p>
-                            <p className={Styles.listItemDetails}>
-                                <strong>House Area:</strong>{" "}
-                                {listing?.houseArea}
-                            </p>
-                            <p className={Styles.listItemDetails}>
-                                <strong>House Width:</strong>{" "}
-                                {listing?.houseWidth}
-                            </p>
-                            <p className={Styles.listItemDetails}>
-                                <strong>Bathroom Count:</strong>{" "}
-                                {listing?.bathroomCount}
-                            </p>
-                            <p className={Styles.listItemDetails}>
-                                <strong>Looking For Count:</strong>{" "}
-                                {listing?.lookingForCount}
-                            </p>
-                            <p className={Styles.listItemDetails}>
-                                <strong>Distance from UNT:</strong>{" "}
-                                {(listing?.distance * 0.621371).toFixed(2)}{" "}
-                                miles
-                            </p>
+                            <div className={Styles.listItemDetailsDiv}>
+                                <div className={Styles.listItemTitleDiv1}>
+                                    <h3 className={Styles.listItemTitle}>
+                                        {listing?.community}
+                                    </h3>
+                                    <img
+                                        className={Styles.listItemImage}
+                                        src={listing?.houseImage}
+                                        alt={listing?.community}
+                                    />
+                                    <div className={Styles.listItemDetailsDivMiddle}>
+                                        <p className={Styles.listItemDetails} style={{ marginRight: "10px" }}>
+                                            {listing?.reviews && listing?.reviews.length > 0
+                                                ? (
+                                                    listing.reviews.reduce((sum, review) => sum + review.rating, 0) /
+                                                    listing.reviews.length
+                                                ).toFixed(1)
+                                                : "No ratings yet"}
+                                        
+                                        </p>
+                                        {/* show average star filledd */}
+                                        
+                                        ({listing?.reviews && listing?.reviews.length })
+                                    </div>
+                                    
+                                </div>
+                                <div className={Styles.listItemDetailsDiv2}>
+                                    <p className={Styles.listItemDetails}>
+                                        <strong>Address:</strong>{" "}
+                                        {listing?.location[0]?.placeDescription}
+                                    </p>
+                                    <p className={Styles.listItemDetails}>
+                                        <strong>Rooms Count:</strong>{" "}
+                                        {listing?.roomsCount}
+                                    </p>
+                                    <p className={Styles.listItemDetails}>
+                                        <strong>Price:</strong> ${listing?.price}
+                                    </p>
+                                    <p className={Styles.listItemDetails}>
+                                        <strong>Description:</strong>{" "}
+                                        {listing?.description}
+                                    </p>
+                                    <p className={Styles.listItemDetails}>
+                                        <strong>House Area:</strong>{" "}
+                                        {listing?.houseArea}
+                                    </p>
+                                    <p className={Styles.listItemDetails}>
+                                        <strong>House Width:</strong>{" "}
+                                        {listing?.houseWidth}
+                                    </p>
+                                    <p className={Styles.listItemDetails}>
+                                        <strong>Bathroom Count:</strong>{" "}
+                                        {listing?.bathroomCount}
+                                    </p>
+                                    <p className={Styles.listItemDetails}>
+                                        <strong>Looking For Count:</strong>{" "}
+                                        {listing?.lookingForCount}
+                                    </p>
+                                    <p className={Styles.listItemDetails}>
+                                        <strong>Distance from UNT:</strong>{" "}
+                                        {(listing?.distance * 0.621371).toFixed(2)}{" "}
+                                        miles
+                                    </p>
 
+                                </div>
+                            </div>
                             <div className={Styles.reviewContainer}>
                                 <h3 className={Styles.reviewTitle}>Review Here</h3>
                             <div className={Styles.starContainer}>
@@ -305,6 +330,13 @@ const ViewCommunities = () => {
                         </div>
                     ))}
                 </ul>
+
+                <div className={Styles.mapContainer}>
+                 map Here
+                 </div>
+                </div>
+
+
             ) : (
                 <p className={Styles.noListings}>No listings found</p>
             )}
