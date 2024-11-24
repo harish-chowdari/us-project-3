@@ -102,6 +102,8 @@ const ViewListings = () => {
         fetchListings();
     }, []);
 
+
+
     const handleSearch = async () => {
         try {
             const response = await axios.get("/all-listings/search", {
@@ -118,24 +120,55 @@ const ViewListings = () => {
                 setSearchedListings(response.data.searchedListings);
                 setSearchClicked(true);
                 console.log(response.data);
-                if (response.data.searchedListings) {
-                    const res = await axios.post("/listings-search-history", {
-                        userId: localStorage.getItem("userId"),
-                        roomsCount: roomCount,
-                        bathroomCount: bathroomCount,
-                        lookingForCount: lookingForCount,
-                        distance: searchDistance,
-                        price: priceRange,
-                    });
-
-                    console.log(res.data);
-                }
+                
             }
         } catch (err) {
             console.error("Error fetching searched listings", err);
             setError("No listings Found");
         }
     };
+
+
+    const userId = localStorage.getItem("userId");
+    const [filters, setFilters] = useState({
+        roomsCount: "",
+        bathroomCount: "",
+        lookingForCount: "",
+        distance: "",
+        price: "",
+    });
+    
+    useEffect(() => {
+        const updateSearchHistory = async () => {
+            try {
+                const response = await axios.post("/listings-search-history", {
+                    userId,
+                    ...filters,
+                });
+                console.log("Search history updated:", response.data);
+            } catch (err) {
+                console.error("Error updating search history", err);
+            }
+        };
+    
+        if (
+            filters.roomsCount ||
+            filters.bathroomCount ||
+            filters.lookingForCount ||
+            filters.distance ||
+            filters.price
+        ) {
+            updateSearchHistory();
+        }
+    }, [filters, userId]);
+    
+    const handleFilterChange = (key, value) => {
+        setFilters((prevFilters) => ({
+            ...prevFilters,
+            [key]: value,
+        }));
+    };
+
 
     const listingsToDisplay = searchClicked ? searchedListings : listings;
 
@@ -154,8 +187,8 @@ const ViewListings = () => {
                     <label></label>
                     <select
                         className={Styles.select}
-                        value={searchDistance}
-                        onChange={(e) => setSearchDistance(e.target.value)}
+                        value={filters.distance}
+                        onChange={(e) => handleFilterChange("distance", e.target.value)}
                     >
                         <option value="">Distance</option>
                         <option value="5">Below 5 miles</option>
@@ -168,8 +201,8 @@ const ViewListings = () => {
                     <label> </label>
                     <select
                         className={Styles.select}
-                        value={roomCount}
-                        onChange={(e) => setRoomCount(e.target.value)}
+                        value={filters.roomsCount}
+                        onChange={(e) => handleFilterChange("roomsCount", e.target.value)}
                     >
                         <option value="">Room Count</option>
                         {[...Array(5).keys()].map((i) => (
@@ -185,8 +218,8 @@ const ViewListings = () => {
                     <label></label>
                     <select
                         className={Styles.select}
-                        value={bathroomCount}
-                        onChange={(e) => setBathroomCount(e.target.value)}
+                        value={filters.bathroomCount}
+                        onChange={(e) => handleFilterChange("bathroomCount", e.target.value)}
                     >
                         <option value="">Bathroom Count</option>
                         {[...Array(5).keys()].map((i) => (
@@ -202,8 +235,8 @@ const ViewListings = () => {
                     <label> </label>
                     <select
                         className={Styles.select}
-                        value={lookingForCount}
-                        onChange={(e) => setLookingForCount(e.target.value)}
+                        value={filters.lookingForCount}
+                        onChange={(e) => handleFilterChange("lookingForCount", e.target.value)}
                     >
                         <option value="">Looking For Count</option>
                         {[...Array(5).keys()].map((i) => (
@@ -219,8 +252,8 @@ const ViewListings = () => {
                     <label> </label>
                     <select
                         className={Styles.select}
-                        value={priceRange}
-                        onChange={(e) => setPriceRange(e.target.value)}
+                        value={filters.price}
+                        onChange={(e) => handleFilterChange("price", e.target.value)}
                     >
                         <option value="">Price Range</option>
                         {[...Array(10).keys()].map((i) => (

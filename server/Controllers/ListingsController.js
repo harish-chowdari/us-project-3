@@ -259,7 +259,7 @@ const nodemailer = require("nodemailer");
 
 const sendMatchedListingsEmail = async (req, res) => {
     try {
-        const users = await UserDetails.find(); // Get all users
+        const users = await UserDetails.find(); 
 
         const transporter = nodemailer.createTransport({
             service: "gmail",
@@ -296,7 +296,10 @@ const sendMatchedListingsEmail = async (req, res) => {
                     text: `We found some listings that match your search criteria:\n\n${matchedListings
                         .map(
                             (listing) =>
-                                `Community: ${listing.community}\n Location: ${listing.location[0].placeDescription}\nPrice: ${listing.price}\nRooms: ${listing.roomsCount}\n\n`
+                                ` ${listing.community}\n
+                                    <img src="${listing.houseImage}" />\n
+                                    Location: ${listing.location[0].placeDescription}\n
+                                    Price: ${listing.review}\nRooms: ${listing.roomsCount}\n\n`
                         )
                         .join("")}`,
                 };
@@ -311,9 +314,10 @@ const sendMatchedListingsEmail = async (req, res) => {
     }
 };
 
-// run cron 
-// const cron = require("node-cron");
-// cron.schedule("*/5 * * * * *", () => {
+
+
+const cron = require("node-cron");
+// cron.schedule("*/50 * * * * *", () => {
 //     console.log("Emails sent with matched listings for each user.");
 //     sendMatchedListingsEmail();
 // });

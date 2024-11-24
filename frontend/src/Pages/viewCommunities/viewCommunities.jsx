@@ -11,7 +11,6 @@ import L from "leaflet";
 
 
 
-// Fix marker icon issues
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
@@ -89,11 +88,7 @@ const MapUpdater = ({ lat, lng }) => {
         try {
             const response = await axios.get("/all-communities/search", {
                 params: {
-                    roomsCount: roomCount,
-                    bathroomCount: bathroomCount,
-                    lookingForCount: lookingForCount,
-                    distance: searchDistance,
-                    price: priceRange,
+                    ...filters,
                 },
             });
 
@@ -101,18 +96,6 @@ const MapUpdater = ({ lat, lng }) => {
                 setSearchedListings(response.data.searchedListings);
                 setSearchClicked(true);
                 console.log(response.data);
-                if (response.data.searchedListings) {
-                    const res = await axios.post("/communities-search-history", {
-                        userId: localStorage.getItem("userId"),
-                        roomsCount: roomCount,
-                        bathroomCount: bathroomCount,
-                        lookingForCount: lookingForCount,
-                        distance: searchDistance,
-                        price: priceRange,
-                    });
-
-                    console.log(res.data);
-                }
             }
         } catch (err) {
             console.error("Error fetching searched listings", err);
@@ -121,24 +104,50 @@ const MapUpdater = ({ lat, lng }) => {
     };
 
 
-    const handleUpdateSearchHistory = async () => {
-        try {
-            const filters = {};
+    const [filters, setFilters] = useState({
+        roomsCount: "",
+        bathroomCount: "",
+        lookingForCount: "",
+        distance: "",
+        price: "",
+    });
     
-            const res = await axios.post("/communities-search-history", {
-                userId: localStorage.getItem("userId"),
-                roomsCount: roomCount,
-                bathroomCount: bathroomCount,
-                lookingForCount: lookingForCount,
-                distance: searchDistance,
-                price: priceRange,
-            });
-
-            console.log(res.data);
-        } catch (err) {
-            console.error("Error updating search history", err);
+    useEffect(() => {
+        const updateSearchHistory = async () => {
+            try {
+                const response = await axios.post("/communities-search-history", {
+                    userId,
+                    ...filters,
+                });
+                console.log("Search history updated:", response.data);
+            } catch (err) {
+                console.error("Error updating search history", err);
+            }
+        };
+    
+        if (
+            filters.roomsCount ||
+            filters.bathroomCount ||
+            filters.lookingForCount ||
+            filters.distance ||
+            filters.price
+        ) {
+            updateSearchHistory();
         }
+    }, [filters, userId]);
+    
+    const handleFilterChange = (key, value) => {
+        setFilters((prevFilters) => ({
+            ...prevFilters,
+            [key]: value,
+        }));
     };
+    
+
+
+
+
+
 
     const listingsToDisplay = searchClicked ? searchedListings : listings;
 
@@ -159,12 +168,8 @@ const MapUpdater = ({ lat, lng }) => {
                     <label></label>
                     <select
                         className={Styles.select}
-                        value={searchDistance}
-                        onChange={(e) => {
-                             
-                            setSearchDistance(e.target.value)
-                            handleUpdateSearchHistory();
-                            }}
+                        value={filters.distance}
+                        onChange={(e) => handleFilterChange("distance", e.target.value)}
                     >
                         <option value="">Distance</option>
                         <option value="5">Below 5 miles</option>
@@ -177,12 +182,8 @@ const MapUpdater = ({ lat, lng }) => {
                     <label> </label>
                     <select
                         className={Styles.select}
-                        value={roomCount}
-                        onChange={(e) => {
-                             
-                            setRoomCount(e.target.value)
-                            handleUpdateSearchHistory();
-                            }}
+                        value={filters.roomsCount}
+                        onChange={(e) => handleFilterChange("roomsCount", e.target.value)}
                     >
                         <option value="">Room Count</option>
                         {[...Array(5).keys()].map((i) => (
@@ -198,11 +199,8 @@ const MapUpdater = ({ lat, lng }) => {
                     <label></label>
                     <select
                         className={Styles.select}
-                        value={bathroomCount}
-                        onChange={(e) => {
-                            setBathroomCount(e.target.value)
-                            handleUpdateSearchHistory();
-                            }}
+                        value={filters.bathroomCount}
+                        onChange={(e) => handleFilterChange("bathroomCount", e.target.value)}
                     >
                         <option value="">Bathroom Count</option>
                         {[...Array(5).keys()].map((i) => (
@@ -218,11 +216,8 @@ const MapUpdater = ({ lat, lng }) => {
                     <label> </label>
                     <select
                         className={Styles.select}
-                        value={lookingForCount}
-                        onChange={(e) => {
-                            setLookingForCount(e.target.value)
-                            handleUpdateSearchHistory();
-                            }}
+                        value={filters.lookingForCount}
+                        onChange={(e) => handleFilterChange("lookingForCount", e.target.value)}
                     >
                         <option value="">Looking For Count</option>
                         {[...Array(5).keys()].map((i) => (
@@ -238,11 +233,8 @@ const MapUpdater = ({ lat, lng }) => {
                     <label> </label>
                     <select
                         className={Styles.select}
-                        value={priceRange}
-                        onChange={(e) => {
-                            setPriceRange(e.target.value)
-                            handleUpdateSearchHistory();
-                            }}
+                        value={filters.price}
+                        onChange={(e) => handleFilterChange("price", e.target.value)}
                     >
                         <option value="">Price Range</option>
                         {[...Array(10).keys()].map((i) => (
@@ -304,45 +296,11 @@ const MapUpdater = ({ lat, lng }) => {
                                         <span className={Styles.viewButton} onClick={() => handleViewListing(listing._id)}>View More</span>              
                                     
 
-                                    {/* <p className={Styles.listItemDetails}>
-                                        <strong>Distance from UNT:</strong>{" "}
-                                        {(listing?.distance * 0.621371).toFixed(2)}{" "}
-                                        miles
-                                    </p> */}
+                                    
 
                                 </div>
                             </div>
-                            {/* <div className={Styles.reviewContainer}>
-                                <h3 className={Styles.reviewTitle}>Review Here</h3>
-                            <div className={Styles.starContainer}>
-                            {[...Array(5)].map((_, index) => (
-                                        <FaStar
-                                            key={index}
-                                            size={20}
-                                            color={index < (rating[listing._id] || 0) ? "#ffc107" : "#e4e5e9"}
-                                            onClick={() => renderStars(listing._id, index)}
-                                            style={{ cursor: "pointer" }}
-                                        />
-                                    ))}
-                                {rating[listing._id] ? emojiReactions[rating[listing._id] - 1] : rating[listing._id]}
-                                </div>
-                                <textarea
-                                    placeholder="Feedback"
-                                    value={feedback[listing._id] || ""}
-                                    onChange={(e) =>
-                                        setFeedback((prevFeedbacks) => ({
-                                            ...prevFeedbacks,
-                                            [listing._id]: e.target.value,
-                                        }))
-                                    }
-                                />
-                                <button
-                                    className={Styles.reviewButton}
-                                    onClick={() => handleReview(listing._id)}
-                                >
-                                    Rate
-                                </button>
-                            </div> */}
+                            
                         </div>
                     ))}
                 </ul>
@@ -360,7 +318,6 @@ const MapUpdater = ({ lat, lng }) => {
                             />
                             <MapUpdater lat={defaultLat} lng={defaultLong} />
 
-                            {/* Render all markers if no specific location is selected */}
                             {(!defaultLat && !defaultLong) &&
                                 listingsToDisplay.map((listing) => (
                                     <Marker
@@ -378,7 +335,6 @@ const MapUpdater = ({ lat, lng }) => {
                                     </Marker>
                                 ))}
 
-                            {/* Render only the selected marker */}
                             {(defaultLat && defaultLong) && (
                                 <Marker position={[defaultLat, defaultLong]}>
                                     <Popup>

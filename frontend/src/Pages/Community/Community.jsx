@@ -48,7 +48,7 @@ const Community = () => {
       if (res.data.reviewMsg) {alert(res.data.reviewMsg) 
         window.location.reload();
       };
-      getCommunity(); 
+      //getCommunity(); 
     } catch (error) {
       console.error(error);
     }
@@ -84,8 +84,8 @@ const Community = () => {
             <p><strong>Width:</strong> {community.houseWidth}</p>
             <p><strong>Area:</strong> {community.houseArea}</p>
             <p><strong>Distance from UNT:</strong>{" "}
-                                        {(community?.distance * 0.621371).toFixed(2)}{" "}
-                                        miles</p>
+                {(community?.distance * 0.621371).toFixed(2)}{" "}
+            miles</p>
           </div>
           <div className={styles.reviewForm}>
             <h4>Leave a Review</h4>
