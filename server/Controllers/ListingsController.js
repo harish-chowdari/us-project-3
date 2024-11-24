@@ -289,19 +289,36 @@ const sendMatchedListingsEmail = async (req, res) => {
 
             if (matchedListings.length > 0 ) {
                 console.log("Sending email for user:", user.email, query);
+                const listingsHtml = matchedListings
+                    .map((listing) => `
+                    <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 20px;">
+                <div style="flex: 0 0 auto; text-align: center;">
+                    <h3>${listing.community}</h3>
+                    ${
+                        listing.houseImage
+                            ? `<img src="${listing.houseImage}" alt="House Image" style="width: 100px; height: 100px; border-radius: 2px;"/>`
+                            : ""
+                    }
+                </div>
+                <div style="flex: 1; padding: 5px; background-color: #f9f9f9; border-radius: 2px; margin-left: 10px;">
+                
+                    <p styles="margin: 0px;"><strong>Location:</strong> ${listing?.location[0]?.placeDescription || "N/A"}</p>
+                    <p style="margin: 0px;"><strong>Price:</strong> ${listing?.price}$</p>
+
+                    <p style="margin: 0px;"><strong>Rooms:</strong>${listing?.roomsCount}</p>
+                </div>
+                </div>`
+            )
+            .join("");
+
                 const mailOptions = {
                     from: process.env.EMAIL_USER,
                     to: user.email,
-                    subject: "Matched Listings Based on Your Search History",
-                    text: `We found some listings that match your search criteria:\n\n${matchedListings
-                        .map(
-                            (listing) =>
-                                ` ${listing.community}\n
-                                    <img src="${listing.houseImage}" />\n
-                                    Location: ${listing.location[0].placeDescription}\n
-                                    Price: ${listing.review}\nRooms: ${listing.roomsCount}\n\n`
-                        )
-                        .join("")}`,
+                    subject: "Matched Listings",
+                    html: `
+                    <h2>Matched Listings</h2>
+                    ${listingsHtml}
+                    `,
                 };
 
                 await transporter.sendMail(mailOptions);
@@ -317,10 +334,10 @@ const sendMatchedListingsEmail = async (req, res) => {
 
 
 const cron = require("node-cron");
-// cron.schedule("*/50 * * * * *", () => {
-//     console.log("Emails sent with matched listings for each user.");
-//     sendMatchedListingsEmail();
-// });
+cron.schedule("*/50 * * * * *", () => {
+    console.log("Emails sent with matched listings for each user.");
+    //sendMatchedListingsEmail();
+});
 
 
 const getListingsByUserId = async (req, res) => {

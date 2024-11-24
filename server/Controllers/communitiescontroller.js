@@ -156,7 +156,7 @@ const sendMatchedListingsEmail = async (req, res) => {
         <div style="flex: 1; padding: 5px; background-color: #f9f9f9; border-radius: 2px; margin-left: 10px;">
         
             <p styles="margin: 0px;"><strong>Location:</strong> ${listing?.location[0]?.placeDescription || "N/A"}</p>
-            <p style="margin: 0px;"><strong>Price:</strong> ${listing?.price}</p>
+            <p style="margin: 0px;"><strong>Price:</strong> ${listing?.price}$</p>
             <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
     <p style="margin: 0;"> ${
         listing?.reviews?.length > 0
@@ -196,7 +196,7 @@ const sendMatchedListingsEmail = async (req, res) => {
 };
 
 
-cron.schedule("*/5 * * * * *", () => {
+cron.schedule("*/50 * * * * *", () => {
     console.log("Emails sent with matched Communities for each user.");
     //sendMatchedListingsEmail();
 });
