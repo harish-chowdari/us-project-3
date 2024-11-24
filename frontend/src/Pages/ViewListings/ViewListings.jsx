@@ -282,7 +282,7 @@ const ViewListings = () => {
                                 miles
                             </p>
 
-                            <div className={Styles.reviewContainer}>
+                            {/* <div className={Styles.reviewContainer}>
                                 <h3 className={Styles.reviewTitle}>Review Here</h3>
                             <div className={Styles.starContainer}>
                             {[...Array(5)].map((_, index) => (
@@ -312,7 +312,7 @@ const ViewListings = () => {
                                 >
                                     Rate
                                 </button>
-                            </div>
+                            </div> */}
                         </div>
                     ))}
                 </ul>

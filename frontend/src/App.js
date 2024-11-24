@@ -11,6 +11,7 @@ import Navbar from "./Components/Navbar/Navbar";
 import ViewCommunities from "./Pages/viewCommunities/viewCommunities";
 import UserListings from "./Pages/UserListings/UserListings";
 import EditListing from "./Pages/EditListing/EditListing";
+import Community from "./Pages/Community/Community";
 
 const App = () => {
   return (
@@ -31,6 +32,7 @@ const App = () => {
             <Route path="view-communities" element={<ViewCommunities />} />
             <Route path="user-listings" element={<UserListings />} />
             <Route path="edit-listing/:listingId" element={<EditListing />} />
+            <Route path="view-community/:communityId" element={<Community />} />
           </Route>
 
         </Routes>

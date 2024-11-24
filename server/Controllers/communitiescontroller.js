@@ -80,7 +80,7 @@ const addReview = async (req, res) => {
         }
 
         if (listing.reviews.some((review) => review.userId.toString() === userId)) {
-            return res.status(200).json({ error: "You have already reviewed this listing" });
+            return res.status(200).json({ AlreadyAdded: "You have already reviewed this listing" });
         }
 
         listing.reviews.push({ userId, rating, feedback });
@@ -96,4 +96,15 @@ const addReview = async (req, res) => {
 };
 
 
-module.exports = {getCommunities, getCommunitiesBySearch, addCommunitySearchHistory, addReview};
+const getCommunitiesById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const data = await CommunitiyModel.findById(id);
+        return res.json(data);
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+
+module.exports = {getCommunities, getCommunitiesBySearch, addCommunitySearchHistory, addReview, getCommunitiesById};

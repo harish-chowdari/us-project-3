@@ -3,6 +3,7 @@ import axios from "../../axios";
 import Styles from "./viewCommunities.module.css";
 import { ToastContainer, toast } from "react-toastify";
 import {FaStar, FaMapMarkerAlt} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -19,6 +20,10 @@ L.Icon.Default.mergeOptions({
 });
 
 const ViewCommunities = () => {
+
+    const navigate = useNavigate();
+    const userId = localStorage.getItem("userId");
+
     const [listings, setListings] = useState([]);
     const [searchedListings, setSearchedListings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -38,7 +43,6 @@ const ViewCommunities = () => {
     const [defaultLat, setDefaultLat] = useState(0);
     const [defaultLong, setDefaultLong] = useState(0);
 
-    const emojiReactions = ["😡", "😕", "😐", "😊", "😁"];
 
 
 
@@ -46,7 +50,7 @@ const MapUpdater = ({ lat, lng }) => {
     const map = useMap();
     useEffect(() => {
         if (lat && lng) {
-            map.setView([lat, lng], 13); // Update the map view
+            map.setView([lat, lng], 13); 
         }
     }, [lat, lng, map]);
     return null;
@@ -58,58 +62,7 @@ const MapUpdater = ({ lat, lng }) => {
         console.log(lat,long)
     }
 
-    const handleReview = async (listingId) => {
-        toast.dismiss();
-        console.log(listingId);
-        try {
-            const listing = listings.find(
-                (listing) => listing._id === listingId
-            );
-            if (!listing) {
-                console.log("Listing not found");
-                return;
-            }
-            
-            if(listing.reviews.some((review) => review.userId.toString() === localStorage.getItem("userId"))){
-                return alert("You have already reviewed this listing");
-            }
-
-            if (rating <= 0 || rating > 5) {
-                toast.error("Please rate between 1 to 5");
-                return;
-            }
-            if (feedback === "") {
-                return toast.error("Please enter a feedback");
-            }
-            const res = await axios.post(`/add-review/${listingId}`, {
-                userId: localStorage.getItem("userId"),
-                rating: rating[listingId],
-                feedback: feedback[listingId]
-            });
-            if (res.data.reviewMsg) {
-                alert(res.data.reviewMsg);
-            }
-            console.log(res.data);
-
-            window.location.reload();
-            setRating(0);
-            setFeedback("");
-        } catch (err) {
-            console.log(err);
-        }
-
-        console.log("Rating:", rating);
-        console.log("Feedback:", feedback);
-        console.log("Listing ID:", listingId);
-    };
-
-    const renderStars = (listingId, index) => {
-        setRating((prevRatings) => ({
-            ...prevRatings,
-            [listingId]: index + 1,
-        }));
-    };
-
+    
     useEffect(() => {
         const fetchListings = async () => {
             try {
@@ -127,7 +80,10 @@ const MapUpdater = ({ lat, lng }) => {
         fetchListings();
     }, []);
 
-    
+
+    const handleViewListing = (listingId) => {
+        navigate(`/home/${userId}/view-community/${listingId}`);
+    }
 
     const handleSearch = async () => {
         try {
@@ -164,10 +120,32 @@ const MapUpdater = ({ lat, lng }) => {
         }
     };
 
+
+    const handleUpdateSearchHistory = async () => {
+        try {
+            const filters = {};
+    
+            const res = await axios.post("/communities-search-history", {
+                userId: localStorage.getItem("userId"),
+                roomsCount: roomCount,
+                bathroomCount: bathroomCount,
+                lookingForCount: lookingForCount,
+                distance: searchDistance,
+                price: priceRange,
+            });
+
+            console.log(res.data);
+        } catch (err) {
+            console.error("Error updating search history", err);
+        }
+    };
+
     const listingsToDisplay = searchClicked ? searchedListings : listings;
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>{error}</div>;
+
+
 
     return (
         <div className={Styles.container}>
@@ -182,7 +160,11 @@ const MapUpdater = ({ lat, lng }) => {
                     <select
                         className={Styles.select}
                         value={searchDistance}
-                        onChange={(e) => setSearchDistance(e.target.value)}
+                        onChange={(e) => {
+                             
+                            setSearchDistance(e.target.value)
+                            handleUpdateSearchHistory();
+                            }}
                     >
                         <option value="">Distance</option>
                         <option value="5">Below 5 miles</option>
@@ -196,7 +178,11 @@ const MapUpdater = ({ lat, lng }) => {
                     <select
                         className={Styles.select}
                         value={roomCount}
-                        onChange={(e) => setRoomCount(e.target.value)}
+                        onChange={(e) => {
+                             
+                            setRoomCount(e.target.value)
+                            handleUpdateSearchHistory();
+                            }}
                     >
                         <option value="">Room Count</option>
                         {[...Array(5).keys()].map((i) => (
@@ -213,7 +199,10 @@ const MapUpdater = ({ lat, lng }) => {
                     <select
                         className={Styles.select}
                         value={bathroomCount}
-                        onChange={(e) => setBathroomCount(e.target.value)}
+                        onChange={(e) => {
+                            setBathroomCount(e.target.value)
+                            handleUpdateSearchHistory();
+                            }}
                     >
                         <option value="">Bathroom Count</option>
                         {[...Array(5).keys()].map((i) => (
@@ -230,7 +219,10 @@ const MapUpdater = ({ lat, lng }) => {
                     <select
                         className={Styles.select}
                         value={lookingForCount}
-                        onChange={(e) => setLookingForCount(e.target.value)}
+                        onChange={(e) => {
+                            setLookingForCount(e.target.value)
+                            handleUpdateSearchHistory();
+                            }}
                     >
                         <option value="">Looking For Count</option>
                         {[...Array(5).keys()].map((i) => (
@@ -247,7 +239,10 @@ const MapUpdater = ({ lat, lng }) => {
                     <select
                         className={Styles.select}
                         value={priceRange}
-                        onChange={(e) => setPriceRange(e.target.value)}
+                        onChange={(e) => {
+                            setPriceRange(e.target.value)
+                            handleUpdateSearchHistory();
+                            }}
                     >
                         <option value="">Price Range</option>
                         {[...Array(10).keys()].map((i) => (
@@ -275,20 +270,7 @@ const MapUpdater = ({ lat, lng }) => {
                                         src={listing?.houseImage}
                                         alt={listing?.community}
                                     />
-                                    <div className={Styles.listItemDetailsDivMiddle}>
-                                        <p className={Styles.listItemDetails} style={{ marginRight: "10px" }}>
-                                            {listing?.reviews && listing?.reviews.length > 0
-                                                ? (
-                                                    listing.reviews.reduce((sum, review) => sum + review.rating, 0) /
-                                                    listing.reviews.length
-                                                ).toFixed(1)
-                                                : "No ratings yet"}
-                                        
-                                        </p>
-                                        
-                                        <span style={{marginTop:"5px"}}>({listing?.reviews && listing?.reviews.length })</span>
-                                        <FaMapMarkerAlt size={17} style={{ color: "blue", cursor: "pointer", marginTop: "5px", marginLeft: "5px" }} onClick={() => handleLocationView(listing.location[0].lat, listing.location[0].long)}>Location</FaMapMarkerAlt>
-                                    </div>
+                                   
                                     
                                 </div>
                                 <div className={Styles.listItemDetailsDiv2}>
@@ -303,35 +285,34 @@ const MapUpdater = ({ lat, lng }) => {
                                     <p className={Styles.listItemDetails}>
                                         <strong>Price:</strong> ${listing?.price}
                                     </p>
-                                    <p className={Styles.listItemDetails}>
-                                        <strong>Description:</strong>{" "}
-                                        {listing?.description}
-                                    </p>
-                                    <p className={Styles.listItemDetails}>
-                                        <strong>House Area:</strong>{" "}
-                                        {listing?.houseArea}
-                                    </p>
-                                    <p className={Styles.listItemDetails}>
-                                        <strong>House Width:</strong>{" "}
-                                        {listing?.houseWidth}
-                                    </p>
-                                    <p className={Styles.listItemDetails}>
-                                        <strong>Bathroom Count:</strong>{" "}
-                                        {listing?.bathroomCount}
-                                    </p>
-                                    <p className={Styles.listItemDetails}>
-                                        <strong>Looking For Count:</strong>{" "}
-                                        {listing?.lookingForCount}
-                                    </p>
-                                    <p className={Styles.listItemDetails}>
+
+                                    <div className={Styles.listItemDetails0}>
+                                        <span className={Styles.listItemDetailsP} style={{ marginRight: "2px", marginTop: "7px", fontSize: "12px" }}>
+                                            {listing?.reviews && listing?.reviews.length > 0
+                                                ? (
+                                                    listing.reviews.reduce((sum, review) => sum + review.rating, 0) /
+                                                    listing.reviews.length
+                                                ).toFixed(1)
+                                                : "No ratings"}
+
+                                        </span>    
+                                        <span style={{marginTop:"5px"}}>({listing?.reviews && listing?.reviews.length })</span>
+                                            
+                                        <FaMapMarkerAlt size={17} style={{ color: "blue", cursor: "pointer", marginTop: "5px", marginLeft: "7px" }} onClick={() => handleLocationView(listing.location[0].lat, listing.location[0].long)}>Location</FaMapMarkerAlt>
+
+                                        </div>    
+                                        <span className={Styles.viewButton} onClick={() => handleViewListing(listing._id)}>View More</span>              
+                                    
+
+                                    {/* <p className={Styles.listItemDetails}>
                                         <strong>Distance from UNT:</strong>{" "}
                                         {(listing?.distance * 0.621371).toFixed(2)}{" "}
                                         miles
-                                    </p>
+                                    </p> */}
 
                                 </div>
                             </div>
-                            <div className={Styles.reviewContainer}>
+                            {/* <div className={Styles.reviewContainer}>
                                 <h3 className={Styles.reviewTitle}>Review Here</h3>
                             <div className={Styles.starContainer}>
                             {[...Array(5)].map((_, index) => (
@@ -361,7 +342,7 @@ const MapUpdater = ({ lat, lng }) => {
                                 >
                                     Rate
                                 </button>
-                            </div>
+                            </div> */}
                         </div>
                     ))}
                 </ul>

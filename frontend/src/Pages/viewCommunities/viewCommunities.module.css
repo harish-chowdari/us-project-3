@@ -53,17 +53,12 @@
   
   .listItem {
     background-color: #fff;
-    padding: 10px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: transform 0.2s, box-shadow 0.2s;
+    padding: 7px 7px;
+    border-radius: 2px;
+    margin: 0px 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   }
-  
-  .listItem:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  }
-  
+
   .listItemTitle {
     font-size: 13px;
     color: #2c3e50;
@@ -157,49 +152,6 @@
     }
   }
 
-
-.reviewContainer{
-  display: flex;
-  flex-direction: column;
-  gap:0px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-
-.reviewTitle{
-  font-size: 11px;
-}
-
-.starContainer{
-  display: flex;
-  gap: 10px;
-  column-gap: 10px;
-  flex-wrap: wrap;
-  align-items:  center;
-  margin-bottom: 5px;
-}
-
-.reviewContainer textarea{
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 11px;
-  width: 100%;
-  box-sizing: border-box;
-  resize: vertical;
-  margin-bottom: 5px;
-}
-
-.reviewContainer button{
-  padding: 5px 10px;
-  background-color: #3498db;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
   
 .listContainer{
   display: flex;
@@ -208,58 +160,72 @@
 
 .list {
   list-style: none;
-  width: 40%;
+  width: 60%;
   overflow-y: auto;
   max-height: 400px;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
 .mapContainer{
   border: #2c3e50 solid 1px;
-  width: 60%;
+  width: 40%;
   height: full;
 }
 
 .listItemDetailsDiv{
   display: flex;
-  justify-content: space-between;
+  align-items: center;
   gap: 10px;
 }
 
 .listItemTitleDiv1{
   display: flex;
   flex-direction: column;
-  width:80%;
+  width:30%;
 }
 
-.listItemTitleDiv1 p{
+.listItemDetailsP{
   margin: 0px;
-  margin-top: 8px;
+  margin-top: 10px;
   font-size: 12px;
   color: #2c3e50;
-  margin-right: 10px;
+  margin-right: 0px;
   background-color: #3498db ;
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 2px;
   font-size: 12px;
   cursor: pointer;
   transition: background-color 0.3s ease;
   padding: 0px 5px;
-  margin-bottom: 5px;
 }
 
-.listItemDetailsDivMiddle{
+
+.listItemDetails0{
   display: flex;
-  align-items: center;
   font-size: 12px;
+  align-items: center;
+}
+
+.listItemDetailsDiv2{
+  display: flex;
+  flex-direction: column;
 }
 
 .listItemDetailsDiv2 p{
-  font-size: 10px;
+  font-size: 11px;
   margin: 0px;
   width: 100%;
+}
+
+.viewButton{
+  font-size: 13px;
+  cursor: pointer;
+  margin: 0px;
+  height: 0px;
+  margin-top: 5px;
+  color: blue;
 }
