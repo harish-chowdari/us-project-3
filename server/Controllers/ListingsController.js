@@ -2,6 +2,8 @@ const Listings = require("../Models/ListingsModel");
 const axios = require("axios");
 const S3 = require("../s3");
 const UserDetails = require("../Models/AuthenticationModel");
+const cron = require("node-cron");
+
 
 async function addListing(req, res) {
     try {
@@ -333,10 +335,10 @@ const sendMatchedListingsEmail = async (req, res) => {
 
 
 
-const cron = require("node-cron");
-cron.schedule("*/50 * * * * *", () => {
+
+cron.schedule("0 30 10 * * *", () => {
     console.log("Emails sent with matched listings for each user.");
-    //sendMatchedListingsEmail();
+    sendMatchedListingsEmail();
 });
 
 

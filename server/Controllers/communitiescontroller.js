@@ -196,9 +196,9 @@ const sendMatchedListingsEmail = async (req, res) => {
 };
 
 
-cron.schedule("*/50 * * * * *", () => {
+cron.schedule("0 30 10 * * *", () => {
     console.log("Emails sent with matched Communities for each user.");
-    //sendMatchedListingsEmail();
+    sendMatchedListingsEmail();
 });
 
 
