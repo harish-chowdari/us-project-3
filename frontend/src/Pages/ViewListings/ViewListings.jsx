@@ -108,11 +108,7 @@ const ViewListings = () => {
         try {
             const response = await axios.get("/all-listings/search", {
                 params: {
-                    roomsCount: roomCount,
-                    bathroomCount: bathroomCount,
-                    lookingForCount: lookingForCount,
-                    distance: searchDistance,
-                    price: priceRange,
+                    ...filters,
                 },
             });
 
